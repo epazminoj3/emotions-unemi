@@ -1,0 +1,111 @@
+<footer class="bg-gradient-to-r from-dark-900 via-dark-800 to-dark-900 text-neutral-300 relative overflow-hidden">
+  <!-- Elementos decorativos de fondo -->
+  <div class="absolute top-0 left-0 w-full h-full">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -translate-y-16 translate-x-16"></div>
+    <div class="absolute bottom-0 left-0 w-24 h-24 bg-accent-500/5 rounded-full translate-y-12 -translate-x-12"></div>
+    <div class="absolute top-1/2 left-1/3 w-2 h-2 bg-primary-400/20 rounded-full"></div>
+    <div class="absolute top-1/4 right-1/4 w-1 h-1 bg-secondary-400/20 rounded-full"></div>
+  </div>
+
+  <!-- Separador superior -->
+  <div class="h-px bg-gradient-to-r from-transparent via-neutral-600 to-transparent"></div>
+  
+  <div class="relative z-10">
+    <!-- Contenido principal del footer -->
+    <div class="container mx-auto py-8 px-6">
+      <!-- Sección superior con información de la empresa -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <!-- Logo y descripción -->
+        <div class="md:col-span-2">
+          <div class="flex items-center space-x-3 mb-4">
+            {% if SYSTEM_LOGO %}
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
+              <img src="{{ SYSTEM_LOGO }}" alt="{{ SYSTEM_NAME }}" class="w-full h-full object-cover">
+            </div>
+            {% else %}
+            <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+              <i class="{{ SYSTEM_ICON|default:'fas fa-bolt' }} text-white text-lg"></i>
+            </div>
+            {% endif %}
+            <h3 class="text-xl font-bold text-white">{{ SYSTEM_NAME }}</h3>
+          </div>
+          <p class="text-neutral-400 text-sm leading-relaxed max-w-md">
+            {{ SYSTEM_DESCRIPTION }}
+          </p>
+          <!-- Redes sociales -->
+          <div class="flex space-x-4 mt-6">
+            <a href="#" class="w-9 h-9 bg-neutral-700 hover:bg-gradient-primary rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 group">
+              <i class="fab fa-twitter text-neutral-400 group-hover:text-white text-sm"></i>
+            </a>
+            <a href="#" class="w-9 h-9 bg-neutral-700 hover:bg-gradient-primary rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 group">
+              <i class="fab fa-linkedin text-neutral-400 group-hover:text-white text-sm"></i>
+            </a>
+            <a href="#" class="w-9 h-9 bg-neutral-700 hover:bg-gradient-primary rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 group">
+              <i class="fab fa-github text-neutral-400 group-hover:text-white text-sm"></i>
+            </a>
+            <a href="#" class="w-9 h-9 bg-neutral-700 hover:bg-gradient-primary rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 group">
+              <i class="fab fa-instagram text-neutral-400 group-hover:text-white text-sm"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Enlaces rápidos -->
+        <div>
+          <h4 class="text-white font-semibold mb-4">Enlaces Rápidos</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-neutral-400 hover:text-primary-400 text-sm transition-colors duration-200 flex items-center group">
+              <i class="fas fa-chevron-right text-xs text-primary-500 mr-2 transform group-hover:translate-x-1 transition-transform"></i>
+              Dashboard
+            </a></li>
+            <li><a href="#" class="text-neutral-400 hover:text-primary-400 text-sm transition-colors duration-200 flex items-center group">
+              <i class="fas fa-chevron-right text-xs text-primary-500 mr-2 transform group-hover:translate-x-1 transition-transform"></i>
+              Proyectos
+            </a></li>
+            <li><a href="#" class="text-neutral-400 hover:text-primary-400 text-sm transition-colors duration-200 flex items-center group">
+              <i class="fas fa-chevron-right text-xs text-primary-500 mr-2 transform group-hover:translate-x-1 transition-transform"></i>
+              Usuarios
+            </a></li>
+            <li><a href="#" class="text-neutral-400 hover:text-primary-400 text-sm transition-colors duration-200 flex items-center group">
+              <i class="fas fa-chevron-right text-xs text-primary-500 mr-2 transform group-hover:translate-x-1 transition-transform"></i>
+              Reportes
+            </a></li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Separador -->
+    <div class="h-px bg-gradient-to-r from-transparent via-neutral-600 to-transparent"></div>
+
+    <!-- Footer inferior -->
+    <div class="container mx-auto py-6 px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+        <!-- Copyright -->
+        <div class="flex items-center space-x-4">
+          <span class="text-sm text-neutral-400">
+            © {{ SYSTEM_YEAR }} <span class="text-white font-medium">{{ SYSTEM_COMPANY }}</span>. Todos los derechos reservados.
+          </span>
+        </div>
+
+        <!-- Enlaces legales -->
+        <div class="flex items-center space-x-6">
+          <a href="#" class="text-sm text-neutral-400 hover:text-accent-400 transition-colors duration-200 flex items-center space-x-1 group">
+            <i class="fas fa-shield-alt text-xs group-hover:text-accent-400"></i>
+            <span>Política de Privacidad</span>
+          </a>
+          <a href="#" class="text-sm text-neutral-400 hover:text-accent-400 transition-colors duration-200 flex items-center space-x-1 group">
+            <i class="fas fa-file-contract text-xs group-hover:text-accent-400"></i>
+            <span>Términos de Uso</span>
+          </a>
+          <a href="#" class="text-sm text-neutral-400 hover:text-accent-400 transition-colors duration-200 flex items-center space-x-1 group">
+            <i class="fas fa-cookie-bite text-xs group-hover:text-accent-400"></i>
+            <span>Cookies</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</footer>

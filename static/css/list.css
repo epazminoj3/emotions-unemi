@@ -1,0 +1,125 @@
+/* Estilos para mejorar la responsividad */
+/* Estilos para dispositivos móviles */
+@media (max-width: 640px) {
+    .table-container table th,
+    .table-container table td {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .table-container table th {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+    
+    .table-container table td {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    
+    /* Mejoras para botones en móvil */
+    .table-container .action-buttons {
+        flex-wrap: wrap;
+    }
+    
+    /* Ajustes para la visualización en pantallas pequeñas */
+    .pagination-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .pagination-info {
+        margin-bottom: 0.75rem;
+        text-align: center;
+    }
+    
+    /* Permitir que los botones se apilen en móvil */
+    .table-container td:last-child .flex {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-end;
+    }
+}
+    
+    /* Animaciones suaves para las transiciones */
+    .table-container table tbody tr {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Mejora visual para el scroll horizontal */
+    .table-container .overflow-x-auto::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    .table-container .overflow-x-auto::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+    }
+    
+    .table-container .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        border-radius: 3px;
+    }
+    
+    .table-container .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    }
+    
+    /* Estilos adicionales para mejorar la responsividad */
+    /* Indicador visual de desplazamiento horizontal */
+    @media (max-width: 768px) {
+        .responsive-table::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 24px;
+            background: linear-gradient(to right, rgba(255,255,255,0), rgba(99, 102, 241, 0.15));
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+        
+        .responsive-table:hover::after {
+            opacity: 1;
+        }
+        
+        /* Ajustes para tarjetas estadísticas en móvil */
+        .grid-cols-1.md\:grid-cols-3 > * {
+            margin-bottom: 0.75rem;
+        }
+        
+        /* Mejora visual de los botones de acción en móvil */
+        .action-buttons button {
+            margin-bottom: 0.5rem;
+            width: auto;
+        }
+        
+        /* Estilos para mejorar la visualización de los grupos */
+        td .flex-wrap span {
+            margin-bottom: 0.25rem;
+        }
+    }
+    
+    /* Indicador de scroll disponible */
+    .table-wrapper {
+        position: relative;
+    }
+    
+    /* Ajustes para tablets */
+    @media (min-width: 641px) and (max-width: 1024px) {
+        /* Estilos específicos para tablets */
+        .filters-container {
+            flex-wrap: wrap;
+        }
+        
+        /* Mejor visualización de los botones en tablet */
+        .action-buttons {
+            margin-top: 0.5rem;
+            justify-content: flex-start;
+        }
+    }

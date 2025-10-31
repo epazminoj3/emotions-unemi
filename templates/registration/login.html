@@ -1,0 +1,90 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default:"Iniciar Sesión" }}</title>
+
+    <!-- Para visualizar los icono de font Awesome (fas fa) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Iconos de las pestañas del navegador -->
+    <link rel="icon" href="{% static 'icons/favicon.ico' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
+
+    <!-- CDN de Tailwind como respaldo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Estilo del loading -->
+    <link rel="stylesheet" href="{% static 'css/loading.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex flex-col justify-center items-center p-4">
+    <!-- Componente de Loading -->
+    {% include "components/loading.html" %}
+    
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-primary-500 to-primary-700 p-6 text-white">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-lock text-white text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">{{ title1|default:"Iniciar Sesión" }}</h2>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            {% if error %}
+                <div class="bg-red-50 text-red-700 p-3 rounded-lg mb-4 flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span>{{ error }}</span>
+                </div>
+            {% endif %}
+            
+            {% if success_messages %}
+                {% for message in success_messages %}
+                    <div class="bg-green-50 text-green-700 p-3 rounded-lg mb-4 flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+    <form method="post" data-loading="true" data-loading-class="group-change">
+        {% csrf_token %}
+        <div class="space-y-4">
+            <div class="space-y-1">
+                <label for="{{ form.username.id_for_label }}" class="text-sm font-medium text-neutral-700">Usuario</label>
+                {% render_field form.username class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Ingrese su nombre de usuario" %}
+            </div>
+            
+            <div class="space-y-1">
+                <label for="{{ form.password.id_for_label }}" class="text-sm font-medium text-neutral-700">Contraseña</label>
+                {% render_field form.password class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Ingrese su contraseña" %}
+            </div>
+            
+            <div class="pt-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                <button type="submit" class="flex-1 py-2 px-4 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Ingresar
+                </button>
+                <button type="button" onclick="loading.show({customClass: 'group-change'}); window.location.href='{% url 'security:dashboard' %}';" class="flex-1 py-2 px-4 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-offset-2 transition-colors">
+                    <i class="fas fa-user mr-2"></i> Ingresar como Invitado
+                </button>
+            </div>
+        </div>
+    </form>
+        
+    <div class="mt-4 text-center text-sm text-neutral-600 p-4 border-t border-neutral-200">
+        <p class="mb-2">¿Olvidaste tu contraseña? <a href="{% url 'security:password_reset' %}" class="text-primary-600 hover:underline">Recuperar contraseña</a></p>
+        <p>¿No tienes una cuenta? <a href="{% url 'security:signup' %}" class="text-primary-600 hover:underline font-medium">Registrarse</a></p>
+    </div>
+</div>
+
+<script src="{% static 'js/loading.js' %}"></script>
+<script src="{% static 'js/tailwind-config.js' %}"></script>
+</body>
+</html>

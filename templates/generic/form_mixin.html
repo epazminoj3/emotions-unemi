@@ -1,0 +1,119 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Prueba de breadcrumbs o migas de pan, se pasa la info desde la vista como contexto -->
+    {% include "components/breadcrumbs.html" with breadcrumbs=breadcrumb_list %}
+
+    <!-- Cabecera con título y botones de acción -->
+    <div class="header-container mb-4 sm:mb-6">
+        <div class="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-edit text-lg sm:text-xl text-primary-600"></i>
+                </div>
+                <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 leading-tight">{{ title }}</h1>
+            </div>
+            <div class="action-buttons flex-shrink-0">
+                <a href="javascript:history.back()" 
+                   class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-800 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105">
+                    <i class="fas fa-arrow-left text-xs mr-2"></i>
+                    <span class="hidden sm:inline">Volver</span>
+                    <span class="sm:hidden">Atrás</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario principal -->
+    <div class="form-container max-w-4xl mx-auto">
+        <div class="bg-white shadow-xl rounded-xl border border-gray-200 overflow-hidden">
+            <!-- Header del formulario -->
+            <div class="px-4 sm:px-6 py-4 bg-gradient-to-r from-primary-50 via-white to-accent-50 border-b border-gray-200">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-primary-500 rounded-full"></div>
+                    <div class="w-2 h-2 bg-accent-500 rounded-full"></div>
+                    <div class="w-2 h-2 bg-secondary-500 rounded-full"></div>
+                    <span class="text-sm font-medium text-gray-600 ml-2">Formulario de datos</span>
+                </div>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data" id="generic-form" class="generic-form" data-loading="true">
+                {% csrf_token %}
+                
+                <!-- Contenido del formulario -->
+                <div class="px-4 sm:px-6 py-6">
+                    {% block form %}
+                        <!-- Campos del formulario -->
+                        <div class="space-y-6">
+                            <!-- Aquí irán los campos del formulario específico -->
+                        </div>
+                    {% endblock %}
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="form-actions px-4 sm:px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
+                    <div class="flex flex-col space-y-3 sm:flex-row sm:justify-end sm:space-y-0 sm:space-x-3">
+                        <!-- Botón Cancelar -->
+                        <a href="javascript:history.back()" 
+                           class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-800 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 order-2 sm:order-1">
+                            <i class="fas fa-times text-xs mr-2"></i>
+                            Cancelar
+                        </a>
+                        
+                        <!-- Botón Guardar -->
+                        <button type="submit" 
+                                class="inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-primary-500 to-accent-500 border border-primary-500 rounded-lg hover:from-primary-600 hover:to-accent-600 hover:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none order-1 sm:order-2">
+                            <i class="fas fa-save text-xs mr-2"></i>
+                            <span>{{ submit_text|default:"Guardar" }}</span>
+                            <!-- Loading spinner (oculto por defecto) -->
+                            <svg class="animate-spin ml-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Información adicional -->
+                    <div class="mt-4 pt-3 border-t border-gray-200">
+                        <div class="flex items-center justify-center space-x-2 text-xs text-gray-500">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Los campos marcados con <span class="text-danger-500 font-semibold">*</span> son obligatorios</span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Card de ayuda (opcional) -->
+        <div class="mt-6 bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-lg p-4">
+            <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-lightbulb text-xs text-white"></i>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-800 mb-1">Consejos para completar el formulario</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Asegúrate de completar todos los campos obligatorios. Los datos se guardarán automáticamente al hacer clic en "Guardar".
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts%}
+<script src="{% static 'js/form.js' %}"></script>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/form.css' %}">
+{% endblock %}

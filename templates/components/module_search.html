@@ -1,0 +1,58 @@
+{% comment %}
+    Componente de búsqueda de módulos del sistema con resultados dinámicos
+    Parámetros:
+    - id: Identificador del buscador (opcional, por defecto: "module-search")
+    - placeholder: Texto de placeholder (opcional, por defecto: "Buscar módulos...")
+    - modules: Lista de módulos permitidos para el usuario con formato:
+        [
+            {
+                'name': 'Nombre del Módulo',
+                'icon': 'fa-icon-class',
+                'url': '/url/to/module/',
+                'description': 'Descripción corta del módulo'
+            },
+            ...
+        ]
+{% endcomment %}
+
+<div class="module-search-container w-full max-w-2xl relative" id="{{ id|default:'module-search' }}-container">
+    <div class="relative group">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-neutral-400 group-focus-within:text-primary-500">
+            <i class="fa fa-search"></i>
+        </div>
+        <input
+            type="search"
+            id="{{ id|default:'module-search' }}"
+            class="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:border-primary-500 placeholder-neutral-400 text-neutral-700"
+            placeholder="{{ placeholder|default:'Buscar módulos...' }}"
+            autocomplete="off"
+        >
+    </div>
+    
+    <div class="module-results absolute z-20 w-full mt-1 bg-white rounded-lg shadow-lg border border-neutral-200 max-h-96 overflow-y-auto hidden" id="{{ id|default:'module-search' }}-results">
+        <!-- Resultados dinámicos se mostrarán aquí mediante JavaScript -->
+        <div class="p-3 text-sm text-neutral-500 border-b border-neutral-100 module-results-info">
+            Comienza a escribir para buscar módulos...
+        </div>
+        
+        <div class="module-results-container">
+            {% if modules %}
+                {% for module in modules %}
+                <a href="{{ module.url }}" class="module-item flex items-start p-3 hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0" data-module-name="{{ module.name|lower }}">
+                    <div class="flex-shrink-0 w-9 h-9 bg-primary-50 text-primary-600 flex items-center justify-center rounded-md mr-3">
+                        <i class="fa {{ module.icon|default:'fa-cube' }}"></i>
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-medium text-neutral-800">{{ module.name }}</h4>
+                        <p class="text-sm text-neutral-500 line-clamp-1">{{ module.description }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <div class="hidden p-4 text-center text-neutral-500 module-no-results">
+            No se encontraron módulos que coincidan con tu búsqueda
+        </div>
+    </div>
+</div>

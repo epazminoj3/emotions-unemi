@@ -1,0 +1,21 @@
+
+<form method="get" action="{{ action|default:'' }}" class="relative flex items-center w-full max-w-lg">
+    <div class="relative flex-grow group">
+        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-neutral-400 group-focus-within:text-primary-500">
+            <i class="fa fa-search"></i>
+        </div>
+        <input
+            type="search"
+            name="{{ name|default:'q' }}"
+            id="{{ id|default:'searchbar' }}"
+            class="w-full pl-10 pr-16 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-100 focus:border-primary-500 transition-all duration-200 placeholder-neutral-400 text-neutral-700"
+            placeholder="{{ placeholder|default:'Buscar...' }}"
+            value="{{ value|default:'' }}"
+            autocomplete="off"
+        >
+        <button type="submit" class="absolute inset-y-0 right-0 flex items-center px-3 text-white bg-primary-500 hover:bg-primary-600 rounded-r-lg transition-all duration-200 mr-px" title="Buscar">
+            <span class="sr-only">Buscar</span>
+            <i class="fa fa-search"></i>
+        </button>
+    </div>
+</form>

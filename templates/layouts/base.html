@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Mi Proyecto{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Para visualizar los icono de font Awesome (fas fa) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Iconos de las pestañas del navegador -->
+    <link rel="icon" href="{% static 'icons/favicon.ico' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
+
+    <!-- Css adicinal para complementar Tailwind -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+    <link rel="stylesheet" href="{% static 'css/modal.css' %}">
+    <link rel="stylesheet" href="{% static 'css/message.css' %}">
+    <link rel="stylesheet" href="{% static 'css/loading.css' %}">
+    <link rel="stylesheet" href="{% static 'css/delete.css' %}">
+    <link rel="stylesheet" href="{% static 'css/module_search.css' %}">
+
+    <!-- Agregar extras a la base -->
+    {% block extra_head %}{% endblock %}
+    
+</head>
+<body class="min-h-screen relative" id="body">
+
+    <!-- Incluir sistema de alertas/mensajes -->
+    {% include "fragments/alerts.html" %}
+    
+    <!-- Componente de Loading -->
+    {% include "components/loading.html" %}
+
+    <!-- Delete Modal Global -->
+    {% include "generic/delete_mixin.html" %}
+
+    
+    <div class="modal" id="modal">
+        <div class="container_modal">
+            <div class="headerModal">
+                <div class="titulo">
+                    {% block header_modal %}
+                    {% endblock %}
+                </div>
+                {% include "components/button.html" with label="" type="button" classes="btn-close-modal" title="Cerrar" icon="fa fa-times" id='close_modal' %}
+            </div>
+            <div class="info_modal">
+                {% block content_modal %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    {% include "components/navbar.html" %}
+
+    <div class="flex">
+        <!-- Sidebar -->
+        {% include "components/sidebar.html" %}
+
+        <!-- Contenido principal -->
+        <!-- 
+            max-w-[768px]: Para móviles (hasta 768px)
+            lg:max-w-3xl: Para laptops y pantallas grandes (1024px)
+            Puedes modificar estos valores según tus necesidades en el archivo base.css o usando clases de Tailwind.
+        -->
+        <main class="flex-1 p-6 mx-auto w-full max-w-[768px] lg:max-w-6xl">
+            {% block content %}
+            <!-- Aquí va el contenido de cada página -->
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Footer -->
+    {% include "partials/footer.html" %}
+
+    <!-- Scripts -->
+    {% include "partials/scripts.html" %}
+    {% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

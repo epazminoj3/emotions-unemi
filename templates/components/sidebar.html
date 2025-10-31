@@ -1,0 +1,111 @@
+<!-- Sidebar -->
+<aside id="sidebar" class="fixed top-16 bottom-0 left-0 w-64 bg-white border-r border-neutral-200 flex flex-col transform -translate-x-full transition-transform duration-300 z-40">
+  
+  <!-- Selector de grupo usando active_group y user_groups del contexto -->
+  {% if user_groups and user_groups|length > 0 %}
+    <div class="px-4 py-4 border-b border-neutral-200 bg-primary-50">
+      <h4 class="text-sm font-semibold text-neutral-800 mb-2">Seleccionar Grupo</h4>
+      <form id="change-group-form" method="post" action="{% url 'security:cambiar_grupo' %}" data-loading="true" data-loading-class="group-change">
+        {% csrf_token %}
+        <div class="relative">
+          <select name="group_id" id="group-selector" class="form-select w-full bg-primary-700 text-white border border-primary-600 rounded-lg py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-500 hover:bg-primary-600 transition-colors cursor-pointer appearance-none pr-8"
+            onchange="document.getElementById('change-group-form').submit();">
+            {% for group in user_groups %}
+              <option value="{{ group.id }}" {% if active_group and active_group.id == group.id %}selected{% endif %}>{{ group.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
+    </div>
+  {% else %}
+    <div class="px-4 py-4 border-b border-neutral-200 bg-neutral-50 text-center">
+      <div class="p-3 rounded-lg bg-neutral-100">
+        <i class="fas fa-users-slash text-neutral-400 text-lg mb-2"></i>
+        <p class="text-sm text-neutral-600 font-medium">No tienes grupos asignados.</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Profile signout -->
+  <div class="p-4 border-t border-neutral-200 mt-auto">
+    <div class="flex items-center space-x-3 p-3 rounded-lg bg-neutral-50 hover:bg-neutral-100 transition-colors">
+      {% if request.user.is_authenticated %}
+        <div class="w-10 h-10 bg-gradient-to-br from-accent-400 to-accent-600 rounded-full flex items-center justify-center">
+          <span class="text-white font-medium text-sm">{{ request.user.username|slice:":2"|upper }}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-neutral-900 truncate">{{ request.user.get_full_name|default:request.user.username }}</p>
+          <p class="text-xs text-neutral-500 truncate">{{ request.user.email|default:"" }}</p>
+        </div>
+      {% else %}
+        <div class="w-10 h-10 bg-neutral-200 rounded-full flex items-center justify-center">
+          <i class="fas fa-user text-neutral-400"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-neutral-900 truncate">Invitado</p>
+          <p class="text-xs text-neutral-500 truncate">No has iniciado sesión</p>
+        </div>
+      {% endif %}
+      <a href="{% url 'security:signout' %}" class="p-2 rounded-md hover:bg-neutral-200 transition-colors text-neutral-500" title="Cerrar sesión">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Navegación principal -->
+  <nav class="flex-1 px-4 py-1 overflow-y-auto">
+    
+    <div class="sidebar-menu custom-scrollbar space-y-1">
+        <!-- Título sección -->
+        <h3 class="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-3 mt-2 mb-3">Navegación</h3>
+        
+        <!-- Dashboard -->
+        <a href="{% url 'emotions:dashboard' %}" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-neutral-700 hover:bg-primary-50 hover:text-primary-700 transition-all duration-200">
+            <i class="fas fa-tachometer-alt text-neutral-500"></i>
+            <span>Dashboard</span>
+        </a> 
+        
+        <!-- Título sección menús -->
+        <h3 class="text-xs font-semibold text-neutral-500 uppercase tracking-wider px-3 mt-4 mb-3">Menús</h3>
+
+        <!-- Menús dinámicos -->
+        {% if menu_list and menu_list|length > 0 %}
+          {% for menu_data in menu_list %}
+          <div class="menu-dropdown mb-2">
+            <button type="button" class="menu-item dropdown-toggle w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-neutral-700 hover:bg-primary-50 hover:text-primary-700 transition-all duration-200" aria-controls="menu-{{ menu_data.menu.id }}">
+              <span class="flex items-center gap-2">
+                <i class="{{ menu_data.menu.icon }} text-neutral-500"></i>
+                <span class="font-medium">{{ menu_data.menu.name }}</span>
+              </span>
+              <i class="fas fa-chevron-down dropdown-arrow transition-transform duration-200"></i>
+            </button>
+            <div class="dropdown-content ml-6 mt-1 hidden space-y-1 py-1" id="menu-{{ menu_data.menu.id }}">
+              {% for group_module_perm in menu_data.group_module_permission_list %}
+                <a href="/{{ group_module_perm.module.url }}" class="dropdown-item flex items-center px-3 py-2 rounded text-neutral-600 hover:bg-primary-100 hover:text-primary-700 group">
+                  <i class="{{ group_module_perm.module.icon }} mr-2 text-neutral-400 group-hover:text-primary-600"></i>
+                  <span>{{ group_module_perm.module.name }}</span>
+                </a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="p-4 my-2 bg-neutral-50 rounded-lg border border-neutral-200">
+            <div class="text-center">
+              <i class="fas fa-folder-open text-neutral-300 text-xl mb-2"></i>
+              <p class="text-neutral-600 text-sm">No tienes módulos disponibles en este grupo.</p>
+              {% if request.user.is_authenticated %}
+                <p class="mt-2 text-xs text-neutral-500">Usuario: {{ request.user.username }}</p>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+    </div>
+
+  </nav>
+
+  
+</aside>
+
+<!-- Backdrop para overlay -->
+<div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-30 hidden backdrop-blur-sm"></div>

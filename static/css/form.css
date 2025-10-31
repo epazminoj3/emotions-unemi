@@ -1,0 +1,102 @@
+    /* Animaciones para inputs focus */
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    }
+    
+    /* Mejora visual para el botón submit en loading */
+    .generic-form[data-loading="true"] button[type="submit"]:disabled {
+        background: linear-gradient(45deg, #6366f1, #8b5cf6, #06b6d4);
+        background-size: 300% 300%;
+        animation: gradient-loading 2s ease infinite;
+    }
+    
+    @keyframes gradient-loading {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Efectos de hover mejorados */
+    .form-actions button:hover,
+    .form-actions a:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 640px) {
+        .form-actions {
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+            background: linear-gradient(to right, #f9fafb, #f3f4f6);
+            backdrop-filter: blur(10px);
+        }
+    }
+
+    /* Clases helper para formularios */
+    .form-group {
+        @apply space-y-2;
+    }
+    
+    .form-label {
+        @apply block text-sm font-semibold text-gray-700;
+    }
+    
+    .form-input {
+        @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-white placeholder-gray-400;
+    }
+    
+    .form-error {
+        @apply text-xs text-danger-500 mt-1;
+    }
+    
+    .form-help {
+        @apply text-xs text-gray-500 mt-1;
+    }
+
+     /* Personalización de checkboxes */
+    input[type="checkbox"]:checked {
+        background-color: #6366f1;
+        border-color: #6366f1;
+    }
+    
+    input[type="checkbox"]:focus {
+        ring-color: #6366f1;
+    }
+    
+    /* Mejora visual para el select múltiple */
+    select[multiple] {
+        min-height: 120px;
+    }
+    
+    select[multiple] option {
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin: 2px;
+    }
+    
+    select[multiple] option:checked {
+        background-color: #6366f1 !important;
+        color: white !important;
+    }
+    
+    /* Hover effects para inputs */
+    input:hover:not(:focus),
+    select:hover:not(:focus),
+    textarea:hover:not(:focus) {
+        border-color: #9ca3af;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+        .grid-cols-1.sm\\:grid-cols-2 {
+            grid-template-columns: 1fr;
+        }
+        
+        select[multiple] {
+            min-height: 100px;
+        }
+    }
