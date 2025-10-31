@@ -1,0 +1,20 @@
+
+# Ignora el archivo de logs de errores
+errores.log
+
+# Ignora la carpeta de entorno virtual (ajusta el nombre si tu venv se llama diferente)
+venv/
+
+# Ignora archivos de migraciones compilados
+*.pyc
+__pycache__/
+
+# Ignora archivos de configuración de VSCode
+.vscode/
+
+# Ignora archivos de caché de Django
+*.log
+
+# Ignora archivos de almacenamiento local de media (si solo usas Azure, puedes ignorar la carpeta media)
+media/
+
