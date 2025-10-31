@@ -1,0 +1,327 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}Estadísticas de Usuario{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
+<style>
+.stats-card {
+    @apply bg-white rounded-lg shadow-md p-6 border border-gray-200;
+}
+.stat-number {
+    @apply text-3xl font-bold text-gray-900;
+}
+.stat-label {
+    @apply text-sm text-gray-600 mt-1;
+}
+.emotion-bar {
+    @apply h-4 rounded-full transition-all duration-300;
+}
+.chart-container {
+    @apply bg-white p-6 rounded-lg shadow-md border border-gray-200;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'emotions:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-chart-line mr-2"></i>
+                Dashboard
+            </a>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400"></i>
+                <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Estadísticas</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Estadísticas Detalladas</h1>
+            <p class="text-gray-600 mt-1">Análisis completo de tus emociones detectadas</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'emotions:analysis_list' %}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <i class="fas fa-list mr-2"></i>
+                Ver Análisis
+            </a>
+            <a href="{% url 'emotions:camera_analysis' %}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                <i class="fas fa-camera mr-2"></i>
+                Nuevo Análisis
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Overview con diseño mejorado -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="stats-card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="stat-number text-blue-700">{{ stats.total_analyses }}</div>
+                    <div class="stat-label text-blue-600">Total de Análisis</div>
+                </div>
+                <div class="p-4 bg-blue-200 rounded-full">
+                    <i class="fas fa-chart-bar text-3xl text-blue-700"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-blue-600 flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                Análisis realizados hasta ahora
+            </div>
+        </div>
+
+        <div class="stats-card bg-gradient-to-br from-green-50 to-green-100 border-l-4 border-green-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="stat-number text-green-700">
+                        {% if stats.most_frequent_emotion %}
+                            {% if stats.most_frequent_emotion == 'happiness' %}😊 Feliz{% endif %}
+                            {% if stats.most_frequent_emotion == 'sadness' %}😢 Triste{% endif %}
+                            {% if stats.most_frequent_emotion == 'anger' %}😠 Enojado{% endif %}
+                            {% if stats.most_frequent_emotion == 'surprise' %}😲 Sorpresa{% endif %}
+                            {% if stats.most_frequent_emotion == 'fear' %}😨 Miedo{% endif %}
+                            {% if stats.most_frequent_emotion == 'disgust' %}🤢 Disgusto{% endif %}
+                            {% if stats.most_frequent_emotion == 'contempt' %}😏 Desprecio{% endif %}
+                            {% if stats.most_frequent_emotion == 'neutral' %}😐 Neutral{% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                    <div class="stat-label text-green-600">Emoción Dominante</div>
+                </div>
+                <div class="p-4 bg-green-200 rounded-full">
+                    <i class="fas fa-smile text-3xl text-green-700"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-green-600 flex items-center">
+                <i class="fas fa-trophy mr-2"></i>
+                La emoción más frecuente detectada
+            </div>
+        </div>
+
+        <div class="stats-card bg-gradient-to-br from-purple-50 to-purple-100 border-l-4 border-purple-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="stat-number text-purple-700">{{ stats.average_confidence|floatformat:1 }}%</div>
+                    <div class="stat-label text-purple-600">Confianza Promedio</div>
+                </div>
+                <div class="p-4 bg-purple-200 rounded-full">
+                    <i class="fas fa-percentage text-3xl text-purple-700"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-purple-600 flex items-center">
+                <i class="fas fa-check-circle mr-2"></i>
+                Precisión del modelo de IA
+            </div>
+        </div>
+
+        <div class="stats-card bg-gradient-to-br from-orange-50 to-orange-100 border-l-4 border-orange-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="stat-number text-orange-700">{{ stats.total_faces_detected }}</div>
+                    <div class="stat-label text-orange-600">Rostros Detectados</div>
+                </div>
+                <div class="p-4 bg-orange-200 rounded-full">
+                    <i class="fas fa-users text-3xl text-orange-700"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-xs text-orange-600 flex items-center">
+                <i class="fas fa-user-friends mr-2"></i>
+                Total de caras analizadas
+            </div>
+        </div>
+    </div>
+
+    <!-- Emotion Distribution con diseño mejorado -->
+    <div class="grid grid-cols-1 gap-6">
+        <!-- Emotion Bars -->
+        <div class="chart-container">
+            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-chart-bar text-blue-600"></i>
+                </div>
+                Distribución de Emociones
+            </h3>
+            {% if emotion_distribution %}
+            <div class="space-y-5">
+                {% for emotion_key, data in emotion_distribution.items %}
+                <div class="group hover:bg-gray-50 p-3 rounded-lg transition-all">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl">
+                                {% if 'felicidad' in data.name|lower %}😊{% elif 'tristeza' in data.name|lower %}😢{% elif 'ira' in data.name|lower %}😠{% elif 'sorpresa' in data.name|lower %}😲{% elif 'miedo' in data.name|lower %}😨{% elif 'disgusto' in data.name|lower %}🤢{% elif 'desprecio' in data.name|lower %}😏{% else %}😐{% endif %}
+                            </span>
+                            <span class="text-base font-bold text-gray-800">{{ data.name }}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-lg font-bold text-gray-900">{{ data.percentage|floatformat:1 }}%</span>
+                            <span class="text-sm text-gray-500 ml-2">({{ data.count }} veces)</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+                        <div class="emotion-bar h-4 rounded-full transition-all duration-500 group-hover:shadow-lg" 
+                             style="width: {{ data.percentage }}%; 
+                                    background: linear-gradient(90deg, 
+                                        {% if 'felicidad' in data.name|lower %}#10B981, #059669
+                                        {% elif 'tristeza' in data.name|lower %}#3B82F6, #2563EB
+                                        {% elif 'ira' in data.name|lower %}#EF4444, #DC2626
+                                        {% elif 'sorpresa' in data.name|lower %}#F59E0B, #D97706
+                                        {% elif 'miedo' in data.name|lower %}#8B5CF6, #7C3AED
+                                        {% elif 'disgusto' in data.name|lower %}#84CC16, #65A30D
+                                        {% elif 'desprecio' in data.name|lower %}#F97316, #EA580C
+                                        {% else %}#6B7280, #4B5563{% endif %});">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-16">
+                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-chart-bar text-gray-400 text-4xl"></i>
+                </div>
+                <p class="text-gray-600 font-medium mb-2">No hay datos suficientes</p>
+                <p class="text-gray-500 text-sm mb-6">Realiza algunos análisis para ver la distribución de emociones</p>
+                <a href="{% url 'emotions:camera_analysis' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>
+                    Crear Primer Análisis
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Trends Chart -->
+    <div class="chart-container">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                <i class="fas fa-chart-line text-purple-600"></i>
+            </div>
+            Tendencias Emocionales (Últimos 14 días)
+        </h3>
+        <div style="height: 400px;">
+            <canvas id="emotionTrendsChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Analysis Summary -->
+    <div class="chart-container">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                <i class="fas fa-clock text-orange-600"></i>
+            </div>
+            Resumen de Actividad
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-l-4 border-blue-500">
+                <div class="text-3xl font-bold text-blue-600">{{ last_7_days|default:0 }}</div>
+                <div class="text-sm text-blue-700 mt-2">Últimos 7 días</div>
+            </div>
+            <div class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-l-4 border-green-500">
+                <div class="text-3xl font-bold text-green-600">{{ last_30_days|default:0 }}</div>
+                <div class="text-sm text-green-700 mt-2">Últimos 30 días</div>
+            </div>
+            <div class="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border-l-4 border-purple-500">
+                <div class="text-3xl font-bold text-purple-600">{{ this_month|default:0 }}</div>
+                <div class="text-sm text-purple-700 mt-2">Este mes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-center space-x-4">
+        <a href="{% url 'emotions:analysis_list' %}" 
+           class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <i class="fas fa-list mr-2"></i>
+            Ver Historial Completo
+        </a>
+        <a href="{% url 'emotions:camera_analysis' %}" 
+           class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+            <i class="fas fa-plus mr-2"></i>
+            Realizar Nuevo Análisis
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de tendencias
+    const trendsCtx = document.getElementById('emotionTrendsChart');
+    if (trendsCtx) {
+        const chartData = {{ chart_data|safe }};
+        
+        new Chart(trendsCtx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Evolución de Emociones en el Tiempo',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Número de Detecciones',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Fecha',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

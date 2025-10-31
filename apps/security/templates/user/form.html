@@ -1,0 +1,365 @@
+{% extends 'generic/form_mixin.html' %}
+{% load static %}
+{% load form_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block form %}
+<div class="px-4 sm:px-6 py-6">
+    <!-- Errores del formulario -->
+    {% if form.errors %}
+    <div class="mb-6 bg-danger-50 border border-danger-200 rounded-lg p-4">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-danger-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-danger-600 text-sm"></i>
+                </div>
+            </div>
+            <div class="ml-3 flex-1">
+                <h3 class="text-sm font-semibold text-danger-800">Errores en el formulario</h3>
+                <div class="mt-2 text-sm text-danger-700">
+                    <p class="mb-2">Por favor, corrija los siguientes errores:</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="space-y-8">
+        <!-- Sección de información básica -->
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center mb-6 pb-4 border-b border-gray-200">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-user-circle text-primary-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">Información básica</h3>
+            </div>
+            
+            <!-- Imagen de perfil -->
+            <div class="mb-6">
+                <div class="space-y-4">
+                    <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.image.label }}
+                    </label>
+                    
+                    <!-- Vista previa de la imagen y campo de carga -->
+                    <div class="flex flex-col sm:flex-row items-start gap-6">
+                        <div class="image-preview-container bg-gray-100 rounded-lg p-4 w-full sm:w-auto flex flex-col items-center">
+                            {% if form.instance.image %}
+                                <img id="preview-image" src="{{ form.instance.get_image }}" alt="Previsualización" class="h-40 w-40 object-cover rounded-full border-4 border-white shadow-lg">
+                            {% else %}
+                                <img id="preview-image" src="{% static 'img/usuario_anonimo.png' %}" alt="Previsualización" class="h-40 w-40 object-cover rounded-full border-4 border-white shadow-lg">
+                            {% endif %}
+                            <p class="text-xs text-gray-500 mt-2">Vista previa</p>
+                        </div>
+                        
+                        <div class="w-full flex-grow">
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-center w-full">
+                                    <label for="{{ form.image.id_for_label }}" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <i class="fas fa-cloud-upload-alt mb-3 text-2xl text-gray-400"></i>
+                                            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Clic para cargar</span></p>
+                                            <p class="text-xs text-gray-500">PNG, JPG o JPEG (Recomendado: 500x500px)</p>
+                                        </div>
+                                        {{ form.image|add_class:"hidden" }}
+                                    </label>
+                                </div>
+                                {% if form.image.errors %}
+                                <p class="text-xs text-danger-600">{{ form.image.errors.0 }}</p>
+                                {% endif %}
+                                <p class="text-xs text-gray-500">La imagen se redimensionará automáticamente si es necesario.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Nombre y Apellido -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="space-y-2">
+                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.first_name.label }}
+                        {% if form.first_name.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.first_name|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200" }}
+                    {% if form.first_name.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.first_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="space-y-2">
+                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.last_name.label }}
+                        {% if form.last_name.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.last_name|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200" }}
+                    {% if form.last_name.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.last_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Usuario y correo -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="space-y-2">
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.username.label }}
+                        {% if form.username.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.username|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200" }}
+                    {% if form.username.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.username.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="space-y-2">
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.email.label }}
+                        {% if form.email.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.email|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200" }}
+                    {% if form.email.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- DNI y teléfono -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label for="{{ form.dni.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.dni.label }}
+                        {% if form.dni.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.dni|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200" }}
+                    {% if form.dni.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.dni.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="space-y-2">
+                    <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.phone.label }}
+                        {% if form.phone.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.phone|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200" }}
+                    {% if form.phone.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de información adicional -->
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center mb-6 pb-4 border-b border-gray-200">
+                <div class="w-10 h-10 bg-gradient-to-br from-accent-100 to-accent-200 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-id-card text-accent-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">Información adicional</h3>
+            </div>
+            
+            <!-- Fecha de nacimiento -->
+            <div class="mb-6">
+                <div class="space-y-2">
+                    <label for="{{ form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.date_of_birth.label }}
+                        {% if form.date_of_birth.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.date_of_birth|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200" }}
+                    {% if form.date_of_birth.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.date_of_birth.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Dirección -->
+            <div class="mb-6">
+                <div class="space-y-2">
+                    <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.address.label }}
+                        {% if form.address.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.address|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 resize-none" }}
+                    {% if form.address.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.address.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Checkboxes de estado -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="flex items-start space-x-3">
+                    <div class="flex items-center h-5 mt-1">
+                        {{ form.is_active|add_class:"w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2" }}
+                    </div>
+                    <div class="text-sm">
+                        <label for="{{ form.is_active.id_for_label }}" class="font-medium text-gray-700">
+                            {{ form.is_active.label }}
+                        </label>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="flex items-center h-5 mt-1">
+                        {{ form.is_staff|add_class:"w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2" }}
+                    </div>
+                    <div class="text-sm">
+                        <label for="{{ form.is_staff.id_for_label }}" class="font-medium text-gray-700">
+                            {{ form.is_staff.label }}
+                        </label>
+                        {% if form.is_staff.help_text %}
+                        <p class="text-xs text-gray-500 mt-1">{{ form.is_staff.help_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="flex items-center h-5 mt-1">
+                        {{ form.is_superuser|add_class:"w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2" }}
+                    </div>
+                    <div class="text-sm">
+                        <label for="{{ form.is_superuser.id_for_label }}" class="font-medium text-gray-700">
+                            {{ form.is_superuser.label }}
+                        </label>
+                        {% if form.is_superuser.help_text %}
+                        <p class="text-xs text-gray-500 mt-1">{{ form.is_superuser.help_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de contraseñas -->
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center mb-6 pb-4 border-b border-gray-200">
+                <div class="w-10 h-10 bg-gradient-to-br from-warning-100 to-warning-200 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-key text-warning-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">Contraseña</h3>
+            </div>
+            
+            <!-- Contraseña y confirmación -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.password1.label }}
+                        {% if form.password1.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.password1|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200" }}
+                    {% if form.password1.help_text %}
+                    <p class="text-xs text-gray-500 mt-1">{{ form.password1.help_text }}</p>
+                    {% endif %}
+                    {% if form.password1.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.password1.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="space-y-2">
+                    <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.password2.label }}
+                        {% if form.password2.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                    </label>
+                    {{ form.password2|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200" }}
+                    {% if form.password2.errors %}
+                    <p class="text-xs text-danger-600 mt-1">{{ form.password2.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección de grupos -->
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center mb-6 pb-4 border-b border-gray-200">
+                <div class="w-10 h-10 bg-gradient-to-br from-success-100 to-success-200 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-users text-success-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">Grupos y permisos</h3>
+            </div>
+            
+            <div class="space-y-2">
+                <label for="{{ form.groups.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                    {{ form.groups.label }}
+                    {% if form.groups.field.required %}<span class="text-danger-500 ml-1">*</span>{% endif %}
+                </label>
+                <div class="relative">
+                    {{ form.groups|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 bg-white" }}
+                </div>
+                {% if form.groups.help_text %}
+                <p class="text-xs text-gray-500 mt-1">{{ form.groups.help_text }}</p>
+                {% endif %}
+                {% if form.groups.errors %}
+                <p class="text-xs text-danger-600 mt-1">{{ form.groups.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Previsualización de la imagen
+        const imageInput = document.getElementById('{{ form.image.id_for_label }}');
+        const previewImage = document.getElementById('preview-image');
+        
+        if (imageInput && previewImage) {
+            imageInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Mejorar experiencia de usuario para contraseñas
+        const passwordFields = document.querySelectorAll('input[type="password"]');
+        passwordFields.forEach(field => {
+            const container = field.parentElement;
+            
+            // Crear botón para mostrar/ocultar contraseña
+            const toggleButton = document.createElement('button');
+            toggleButton.type = 'button';
+            toggleButton.className = 'absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none';
+            toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+            toggleButton.setAttribute('aria-label', 'Mostrar contraseña');
+            
+            // Ajustar posicionamiento del contenedor
+            container.style.position = 'relative';
+            
+            // Agregar botón al contenedor
+            container.appendChild(toggleButton);
+            
+            // Agregar evento para mostrar/ocultar contraseña
+            toggleButton.addEventListener('click', function() {
+                if (field.type === 'password') {
+                    field.type = 'text';
+                    this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                    this.setAttribute('aria-label', 'Ocultar contraseña');
+                } else {
+                    field.type = 'password';
+                    this.innerHTML = '<i class="fas fa-eye"></i>';
+                    this.setAttribute('aria-label', 'Mostrar contraseña');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'generic/detail_mixin.html' %}
+{% load static %}
+
+{% block title %}Mi Perfil{% endblock %}
+
+{% block detail_content %}
+<div class="p-4 sm:p-8 space-y-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Columna de información personal -->
+        <div class="space-y-6">
+            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Información Personal</h3>
+            
+            <div>
+                <div class="text-sm font-semibold text-neutral-500 mb-1">Nombres</div>
+                <div class="text-base text-neutral-800">{{ object.first_name|default:"No especificado" }}</div>
+            </div>
+            
+            <div>
+                <div class="text-sm font-semibold text-neutral-500 mb-1">Apellidos</div>
+                <div class="text-base text-neutral-800">{{ object.last_name|default:"No especificado" }}</div>
+            </div>
+            
+            <div>
+                <div class="text-sm font-semibold text-neutral-500 mb-1">Correo electrónico</div>
+                <div class="text-base text-neutral-800">{{ object.email|default:"No especificado" }}</div>
+            </div>
+            
+            <div>
+                <div class="text-sm font-semibold text-neutral-500 mb-1">Cédula/DNI</div>
+                <div class="text-base text-neutral-800">{{ object.dni|default:"No especificado" }}</div>
+            </div>
+        </div>
+        
+        <!-- Columna de información de contacto -->
+        <div class="space-y-6">
+            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Información de Contacto</h3>
+            
+            <div>
+                <div class="text-sm font-semibold text-neutral-500 mb-1">Teléfono</div>
+                <div class="text-base text-neutral-800">{{ object.phone|default:"No especificado" }}</div>
+            </div>
+            
+            <div>
+                <div class="text-sm font-semibold text-neutral-500 mb-1">Dirección</div>
+                <div class="text-base text-neutral-800">{{ object.direction|default:"No especificada" }}</div>
+            </div>
+            
+            <div>
+                <div class="text-sm font-semibold text-neutral-500 mb-1">Imagen de perfil</div>
+                <div class="flex items-center space-x-3">
+                    {% if object.image %}
+                    <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-100">
+                        <img src="{{ object.image.url }}" alt="Imagen de perfil" class="w-full h-full object-cover">
+                    </div>
+                    {% else %}
+                    <div class="w-16 h-16 bg-gradient-to-br from-accent-400 to-accent-600 rounded-full flex items-center justify-center">
+                        <span class="text-white font-medium">{{ object.username|slice:":2"|upper }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block detail_actions %}
+<a href="{% url 'security:profile_update' %}" class="inline-flex items-center justify-center px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-primary-500 to-accent-500 border border-primary-500 rounded-lg hover:from-primary-600 hover:to-accent-600 hover:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+    <i class="fas fa-edit text-xs mr-2"></i>
+    <span>Actualizar Datos</span>
+</a>
+{% endblock %}

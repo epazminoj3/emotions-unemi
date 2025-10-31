@@ -1,0 +1,591 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Análisis en Tiempo Real - Detección de Emociones{% endblock %}
+
+{% block extra_head %}
+<style>
+    .video-container {
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+        background: #000;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .video-stream {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    
+    .video-overlay {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    
+    .controls-panel {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .emotion-indicator {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        margin: 2px;
+    }
+    
+    .emotion-happiness { background: #10B981; color: white; }
+    .emotion-sadness { background: #3B82F6; color: white; }
+    .emotion-anger { background: #EF4444; color: white; }
+    .emotion-surprise { background: #F59E0B; color: white; }
+    .emotion-fear { background: #8B5CF6; color: white; }
+    .emotion-disgust { background: #84CC16; color: white; }
+    .emotion-contempt { background: #F97316; color: white; }
+    .emotion-neutral { background: #6B7280; color: white; }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .status-active { background: #10B981; }
+    .status-inactive { background: #EF4444; }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .stat-card {
+        background: #F8FAFC;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #1E40AF;
+    }
+    
+    .stat-label {
+        color: #64748B;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header con botón de volver -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+                <i class="fas fa-video mr-3 text-red-500"></i>
+                Análisis de Emociones en Tiempo Real
+            </h1>
+            <p class="mt-2 text-gray-600">Detección continua de emociones usando tu cámara con el modelo FER+</p>
+        </div>
+        <a href="{% url 'emotions:dashboard' %}" 
+           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver al Dashboard
+        </a>
+    </div>
+
+    {% csrf_token %}
+
+    <!-- Selector de cámara -->
+    <div class="mb-6 bg-white rounded-lg shadow p-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+            <label for="camera-select" class="text-sm font-medium text-gray-700 flex items-center">
+                <i class="fas fa-camera mr-2 text-blue-500"></i>
+                Seleccionar Cámara:
+            </label>
+            <select id="camera-select" 
+                    class="flex-1 sm:flex-none sm:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                <option value="">Detectando cámaras disponibles...</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Video Stream -->
+    <div class="video-container">
+        <video id="video-element" class="video-stream" autoplay muted playsinline></video>
+        <canvas id="overlay-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+        <canvas id="capture-canvas" style="display: none;"></canvas>
+        <div class="video-overlay">
+            <div id="status-indicator">
+                <span class="status-indicator status-inactive"></span>
+                <span id="status-text">Cámara Desactivada</span>
+            </div>
+            <div id="fps-counter" class="mt-2">FPS: 0</div>
+        </div>
+    </div>
+
+    <!-- Controls Panel -->
+    <div class="controls-panel">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
+            <h3 class="text-lg font-semibold flex items-center">
+                <i class="fas fa-cogs mr-2 text-blue-500"></i>
+                Controles
+            </h3>
+            <div class="flex flex-wrap gap-2">
+                <button id="start-camera" class="inline-flex items-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-play mr-2"></i>
+                    <span>Iniciar Cámara</span>
+                </button>
+                <button id="toggle-detection" class="inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors" disabled>
+                    <i class="fas fa-brain mr-2"></i>
+                    <span>Iniciar Detección</span>
+                </button>
+                <button id="stop-camera" class="inline-flex items-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors" disabled>
+                    <i class="fas fa-stop mr-2"></i>
+                    <span>Detener</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Results -->
+        <div id="current-results" class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3 flex items-center">
+                <i class="fas fa-chart-line mr-2 text-green-500"></i>
+                Resultados Actuales
+            </h4>
+            <div id="faces-info" class="text-gray-600">
+                Inicia la cámara y la detección para ver los resultados en tiempo real
+            </div>
+            <div id="emotions-display" class="mt-3"></div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="flex items-center justify-center mb-2">
+                    <i class="fas fa-user-friends text-blue-500 text-lg"></i>
+                </div>
+                <div id="faces-count" class="stat-value">0</div>
+                <div class="stat-label">Rostros Detectados</div>
+            </div>
+            <div class="stat-card">
+                <div id="detection-time" class="stat-value">--</div>
+                <div class="stat-label">Tiempo de Análisis (ms)</div>
+            </div>
+            <div class="stat-card">
+                <div id="dominant-emotion" class="stat-value">--</div>
+                <div class="stat-label">Emoción Dominante</div>
+            </div>
+            <div class="stat-card">
+                <div id="confidence-level" class="stat-value">--%</div>
+                <div class="stat-label">Nivel de Confianza</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+class RealTimeEmotionAnalysis {
+    constructor() {
+        this.selectedDeviceId = null;
+        this.cameras = [];
+        this.stream = null;
+        this.detectionActive = false;
+        this.detectionInterval = null;
+        this.frameCount = 0;
+        this.fpsLastTime = Date.now();
+        
+        this.initializeElements();
+        this.bindEvents();
+        this.detectCameras();
+        this.startFPSCounter();
+    }
+    
+    initializeElements() {
+        this.video = document.getElementById('video-element');
+        this.canvas = document.getElementById('capture-canvas');
+        this.overlayCanvas = document.getElementById('overlay-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.overlayCtx = this.overlayCanvas.getContext('2d');
+        this.startBtn = document.getElementById('start-camera');
+        this.toggleBtn = document.getElementById('toggle-detection');
+        this.stopBtn = document.getElementById('stop-camera');
+        this.cameraSelect = document.getElementById('camera-select');
+        this.statusIndicator = document.querySelector('.status-indicator');
+        this.statusText = document.getElementById('status-text');
+        this.facesInfo = document.getElementById('faces-info');
+        this.emotionsDisplay = document.getElementById('emotions-display');
+        this.facesCount = document.getElementById('faces-count');
+        this.detectionTime = document.getElementById('detection-time');
+        this.dominantEmotion = document.getElementById('dominant-emotion');
+        this.confidenceLevel = document.getElementById('confidence-level');
+        this.fpsCounter = document.getElementById('fps-counter');
+    }
+    
+    bindEvents() {
+        this.startBtn.addEventListener('click', () => this.startCamera());
+        this.toggleBtn.addEventListener('click', () => this.toggleDetection());
+        this.stopBtn.addEventListener('click', () => this.stopCamera());
+        this.cameraSelect.addEventListener('change', (e) => {
+            this.selectedDeviceId = e.target.value;
+            if (this.stream) {
+                this.startCamera(); // Reiniciar con nueva cámara
+            }
+        });
+    }
+    
+    async detectCameras() {
+        try {
+            // Usar API de MediaDevices para detectar cámaras del dispositivo
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            this.cameras = devices.filter(device => device.kind === 'videoinput');
+            
+            this.cameraSelect.innerHTML = '';
+            
+            if (this.cameras.length === 0) {
+                this.cameraSelect.innerHTML = '<option value="">No se encontraron cámaras</option>';
+                console.error('✗ No se encontraron cámaras en el dispositivo');
+                return;
+            }
+            
+            // Agregar cámaras detectadas (incluye móvil)
+            this.cameras.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.textContent = device.label || `Cámara ${index + 1}`;
+                this.cameraSelect.appendChild(option);
+            });
+            
+            if (this.cameras.length > 0) {
+                this.selectedDeviceId = this.cameras[0].deviceId;
+                this.cameraSelect.value = this.selectedDeviceId;
+            }
+            
+            console.log(`✓ Detectadas ${this.cameras.length} cámaras:`, this.cameras.map(c => c.label));
+            
+        } catch (error) {
+            console.error('✗ Error detectando cámaras:', error);
+            this.cameraSelect.innerHTML = '<option value="">Error detectando cámaras</option>';
+        }
+    }
+    
+    async startCamera() {
+        try {
+            // Detener stream anterior si existe
+            if (this.stream) {
+                this.stream.getTracks().forEach(track => track.stop());
+            }
+            
+            const constraints = {
+                video: {
+                    deviceId: this.selectedDeviceId ? { exact: this.selectedDeviceId } : undefined,
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            };
+            
+            console.log('Intentando acceder a cámara:', this.selectedDeviceId);
+            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.video.srcObject = this.stream;
+            
+            // Configurar canvas overlay para que coincida con el video
+            this.video.addEventListener('loadedmetadata', () => {
+                this.overlayCanvas.width = this.video.videoWidth;
+                this.overlayCanvas.height = this.video.videoHeight;
+            });
+            
+            this.statusIndicator.className = 'status-indicator status-active';
+            this.statusText.textContent = 'Cámara Activa';
+            
+            // Actualizar UI
+            this.startBtn.disabled = true;
+            this.toggleBtn.disabled = false;
+            this.stopBtn.disabled = false;
+            
+            console.log('✓ Cámara iniciada correctamente');
+            this.showNotification('success', 'Cámara iniciada correctamente');
+            
+        } catch (error) {
+            console.error('✗ Error iniciando cámara:', error);
+            this.statusText.textContent = 'Error al acceder a la cámara';
+            this.showNotification('error', 'No se pudo acceder a la cámara. Verifica los permisos.');
+        }
+    }
+    
+    stopCamera() {
+        // Detener detección primero
+        if (this.detectionActive) {
+            this.toggleDetection();
+        }
+        
+        // Detener stream
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
+        }
+        
+        this.video.srcObject = null;
+        
+        // Actualizar UI
+        this.statusIndicator.className = 'status-indicator status-inactive';
+        this.statusText.textContent = 'Cámara Desactivada';
+        this.startBtn.disabled = false;
+        this.toggleBtn.disabled = true;
+        this.stopBtn.disabled = true;
+        
+        // Limpiar resultados
+        this.facesCount.textContent = '0';
+        this.detectionTime.textContent = '--';
+        this.dominantEmotion.textContent = '--';
+        this.confidenceLevel.textContent = '--%';
+        this.facesInfo.textContent = 'Cámara detenida';
+        this.emotionsDisplay.innerHTML = '';
+        
+        console.log('✓ Cámara detenida');
+        this.showNotification('success', 'Cámara detenida');
+    }
+    
+    toggleDetection() {
+        if (!this.detectionActive) {
+            // Iniciar detección
+            if (!this.stream) {
+                this.showNotification('error', 'Primero inicia la cámara');
+                return;
+            }
+            
+            this.detectionActive = true;
+            this.startDetectionLoop();
+            
+            this.toggleBtn.innerHTML = '<i class="fas fa-stop-circle mr-2"></i><span>Detener Detección</span>';
+            this.toggleBtn.className = 'inline-flex items-center bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors';
+            
+            console.log('✓ Detección iniciada');
+            this.showNotification('success', 'Detección de emociones iniciada');
+            
+        } else {
+            // Detener detección
+            this.detectionActive = false;
+            this.stopDetectionLoop();
+            
+            this.toggleBtn.innerHTML = '<i class="fas fa-brain mr-2"></i><span>Iniciar Detección</span>';
+            this.toggleBtn.className = 'inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors';
+            
+            console.log('✓ Detección detenida');
+            this.showNotification('success', 'Detección de emociones detenida');
+        }
+    }
+    
+    startDetectionLoop() {
+        // Analizar cada 1 segundo (1000ms)
+        this.detectionInterval = setInterval(() => {
+            this.analyzeCurrentFrame();
+        }, 1000);
+    }
+    
+    stopDetectionLoop() {
+        if (this.detectionInterval) {
+            clearInterval(this.detectionInterval);
+            this.detectionInterval = null;
+        }
+    }
+    
+    async analyzeCurrentFrame() {
+        if (!this.stream || !this.detectionActive) {
+            return;
+        }
+        
+        try {
+            // Configurar canvas con el tamaño del video
+            this.canvas.width = this.video.videoWidth;
+            this.canvas.height = this.video.videoHeight;
+            
+            // Dibujar frame actual en canvas
+            this.ctx.drawImage(this.video, 0, 0);
+            
+            // Obtener datos base64
+            const imageData = this.canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Enviar al backend para análisis
+            const startTime = Date.now();
+            const response = await fetch("{% url 'emotions:api_analyze_base64' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCsrfToken()
+                },
+                body: JSON.stringify({
+                    image_data: imageData
+                })
+            });
+            
+            const data = await response.json();
+            const endTime = Date.now();
+            
+            if (data.success) {
+                this.updateResults(data.analysis, endTime - startTime);
+                this.frameCount++;
+            } else {
+                console.error('✗ Error en análisis:', data.error);
+            }
+            
+        } catch (error) {
+            console.error('✗ Error analizando frame:', error);
+        }
+    }
+    
+    updateResults(analysis, responseTime) {
+        // Limpiar canvas overlay
+        this.overlayCtx.clearRect(0, 0, this.overlayCanvas.width, this.overlayCanvas.height);
+        
+        // Actualizar información de rostros
+        const facesDetected = analysis.faces_detected || 0;
+        this.facesCount.textContent = facesDetected;
+        this.detectionTime.textContent = responseTime;
+        
+        if (facesDetected > 0 && analysis.faces && analysis.faces.length > 0) {
+            this.facesInfo.textContent = `${facesDetected} rostro(s) detectado(s)`;
+            
+            // Dibujar cuadros verdes sobre los rostros
+            const scaleX = this.overlayCanvas.width / this.canvas.width;
+            const scaleY = this.overlayCanvas.height / this.canvas.height;
+            
+            this.overlayCtx.strokeStyle = '#10B981'; // Verde
+            this.overlayCtx.lineWidth = 3;
+            this.overlayCtx.font = 'bold 16px Arial';
+            
+            // Mostrar emociones
+            let emotionsHtml = '';
+            let maxConfidence = 0;
+            let dominantEmotionText = '--';
+            
+            analysis.faces.forEach((face, index) => {
+                const emotions = face.emotions || {};
+                
+                // Dibujar rectángulo verde
+                const x = face.x * scaleX;
+                const y = face.y * scaleY;
+                const w = face.width * scaleX;
+                const h = face.height * scaleY;
+                
+                this.overlayCtx.strokeRect(x, y, w, h);
+                
+                // Dibujar etiqueta con emoción dominante
+                const emotion = face.dominant_emotion;
+                const confidence = face.confidence;
+                const emotionText = this.translateEmotion(emotion);
+                const label = `${emotionText} ${(confidence * 100).toFixed(0)}%`;
+                
+                this.overlayCtx.fillStyle = '#10B981';
+                this.overlayCtx.fillRect(x, y - 25, label.length * 10, 25);
+                this.overlayCtx.fillStyle = '#FFFFFF';
+                this.overlayCtx.fillText(label, x + 5, y - 7);
+                
+                const faceEmotions = Object.entries(emotions)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 3); // Top 3 emociones
+                
+                emotionsHtml += `<div class="mb-2">
+                    <strong>Rostro ${index + 1}:</strong><br>`;
+                
+                faceEmotions.forEach(([emotion, confidence]) => {
+                    const emotionClass = `emotion-${emotion}`;
+                    const emotionText = this.translateEmotion(emotion);
+                    emotionsHtml += `<span class="emotion-indicator ${emotionClass}">
+                        ${emotionText}: ${(confidence * 100).toFixed(1)}%
+                    </span>`;
+                    
+                    if (confidence > maxConfidence) {
+                        maxConfidence = confidence;
+                        dominantEmotionText = emotionText;
+                    }
+                });
+                
+                emotionsHtml += '</div>';
+            });
+            
+            this.emotionsDisplay.innerHTML = emotionsHtml;
+            this.dominantEmotion.textContent = dominantEmotionText;
+            this.confidenceLevel.textContent = `${(maxConfidence * 100).toFixed(1)}%`;
+        } else {
+            this.facesInfo.textContent = 'No se detectaron rostros en este frame';
+            this.emotionsDisplay.innerHTML = '';
+            this.dominantEmotion.textContent = '--';
+            this.confidenceLevel.textContent = '--%';
+        }
+    }
+    
+    startFPSCounter() {
+        setInterval(() => {
+            const now = Date.now();
+            const elapsed = (now - this.fpsLastTime) / 1000;
+            const fps = this.frameCount / elapsed;
+            
+            this.fpsCounter.textContent = `FPS: ${fps.toFixed(1)}`;
+            
+            this.frameCount = 0;
+            this.fpsLastTime = now;
+        }, 1000);
+    }
+    
+    translateEmotion(emotion) {
+        const translations = {
+            'neutral': 'Neutral',
+            'happiness': 'Felicidad',
+            'surprise': 'Sorpresa',
+            'sadness': 'Tristeza',
+            'anger': 'Ira',
+            'disgust': 'Disgusto',
+            'fear': 'Miedo',
+            'contempt': 'Desprecio'
+        };
+        return translations[emotion] || emotion;
+    }
+    
+    showNotification(type, message) {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } text-white font-medium`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+    
+    getCsrfToken() {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]');
+        return token ? token.value : '';
+    }
+}
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+    new RealTimeEmotionAnalysis();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'generic/form_mixin.html' %}
+{% load static %}
+
+{% block title %}Asignar permisos de módulo a grupo{% endblock %}
+
+{% block form %}
+<div class="p-4 sm:p-8 space-y-8">
+    <div>
+        <label for="{{ form.group.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">Grupo</label>
+        {{ form.group }}
+        {% if form.group.errors %}
+        <p class="text-sm text-danger-600 mt-2">{{ form.group.errors.0 }}</p>
+        {% endif %}
+    </div>
+    <div>
+        <label for="{{ form.module.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">Módulo</label>
+        {{ form.module }}
+        {% if form.module.errors %}
+        <p class="text-sm text-danger-600 mt-2">{{ form.module.errors.0 }}</p>
+        {% endif %}
+    </div>
+    <div>
+        <label class="text-sm font-semibold text-neutral-700 mb-2 block">Permisos</label>
+        <div id="perm-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-80 overflow-y-auto">
+            <div class="text-neutral-500 italic">Seleccione un módulo para ver sus permisos.</div>
+        </div>
+        {% if form.permissions.errors %}
+        <p class="text-sm text-danger-600 mt-2">{{ form.permissions.errors.0 }}</p>
+        {% endif %}
+    </div>
+    {% if form.non_field_errors %}
+    <div class="mt-4 text-danger-600 font-semibold">
+        {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/form_permission.js' %}"></script>
+{% endblock %}

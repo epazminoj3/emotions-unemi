@@ -1,0 +1,239 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Detalle del Análisis - {{ analysis.id }}{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumbs con botón de volver -->
+<div class="flex items-center justify-between mb-6">
+    {% include 'components/breadcrumbs.html' with items='Dashboard,Detección de Emociones,Historial,Detalle del Análisis' %}
+    <div class="flex space-x-2">
+        <a href="{% url 'emotions:analysis_list' %}" 
+           class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver al Historial
+        </a>
+        <a href="{% url 'emotions:dashboard' %}" 
+           class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <i class="fas fa-home mr-2"></i>
+            Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Imagen analizada -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 text-white">
+                    <h1 class="text-2xl font-bold flex items-center">
+                        <i class="fas fa-image mr-3"></i>
+                        Imagen Analizada
+                    </h1>
+                    <p class="text-blue-100 mt-1">{{ analysis.created_at|date:"d/m/Y H:i" }}</p>
+                </div>
+                
+                <div class="p-6">
+                    <div class="relative">
+                        <img src="{{ analysis.image.url }}" 
+                             alt="Imagen analizada" 
+                             class="w-full h-auto rounded-lg shadow-sm max-h-96 object-contain mx-auto bg-gray-50">
+                        
+                        <!-- Información superpuesta -->
+                        <div class="absolute top-4 right-4 bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-friends mr-2"></i>
+                                {{ analysis.faces_detected }} rostro{{ analysis.faces_detected|pluralize:"s" }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Metadatos de la imagen -->
+                    <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-gray-600">Rostros</p>
+                            <p class="font-semibold text-lg">{{ analysis.faces_detected }}</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-gray-600">Procesamiento</p>
+                            <p class="font-semibold text-lg">{{ analysis.processing_time|floatformat:2 }}s</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-gray-600">Confianza</p>
+                            <p class="font-semibold text-lg">{{ analysis.average_confidence|floatformat:1 }}%</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <p class="text-gray-600">Emoción Principal</p>
+                            <p class="font-semibold text-lg">{{ analysis.get_dominant_emotion_display|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de información y estadísticas -->
+        <div class="space-y-6">
+            
+            <!-- Información general -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                    Información General
+                </h2>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-gray-600">ID del Análisis:</span>
+                        <span class="font-medium">#{{ analysis.id }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-gray-600">Fecha:</span>
+                        <span class="font-medium">{{ analysis.created_at|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-gray-600">Hora:</span>
+                        <span class="font-medium">{{ analysis.created_at|date:"H:i:s" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-gray-600">Usuario:</span>
+                        <span class="font-medium">{{ analysis.user.get_full_name|default:analysis.user.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalles por rostro -->
+    {% if faces_summary %}
+    <div class="mt-8 bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-green-500 to-teal-600 px-6 py-4 text-white">
+            <h2 class="text-2xl font-bold flex items-center">
+                <i class="fas fa-users mr-3"></i>
+                Análisis Detallado por Rostro
+            </h2>
+            <p class="text-green-100 mt-1">{{ faces_summary|length }} rostro{{ faces_summary|length|pluralize:"s" }} detectado{{ faces_summary|length|pluralize:"s" }}</p>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {% for face in faces_summary %}
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Rostro {{ forloop.counter }}</h3>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                            {{ face.confidence|floatformat:1 }}% confianza
+                        </span>
+                    </div>
+                    
+                    <!-- Imagen del rostro recortado -->
+                    {% if face.face_image %}
+                    <div class="mb-4 flex justify-center">
+                        <img src="{{ MEDIA_URL }}{{ face.face_image }}" 
+                             alt="Rostro {{ forloop.counter }}" 
+                             class="rounded-lg border-4 border-gray-300 shadow-md max-w-full h-auto"
+                             style="max-height: 150px; object-fit: contain;">
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Emoción dominante -->
+                    <div class="mb-4 p-4 bg-white rounded-lg border">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">Emoción Dominante:</h4>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full mr-3" 
+                                 style="background-color: {{ face.dominant_emotion_color|default:'#6B7280' }}"></div>
+                            <span class="text-xl font-bold text-gray-900">{{ face.dominant_emotion_name }}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">{{ face.dominant_emotion_confidence|floatformat:1 }}% de probabilidad</p>
+                    </div>
+                    
+                    <!-- Distribución de emociones -->
+                    <div class="space-y-2">
+                        <h4 class="text-sm font-medium text-gray-700">Todas las emociones:</h4>
+                        {% for emotion_name, emotion_data in face.emotions.items %}
+                        <div class="flex items-center justify-between text-sm">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full mr-2" 
+                                     style="background-color: {{ emotion_data.color }}"></div>
+                                <span class="text-gray-600">{{ emotion_data.name }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                    <div class="h-2 rounded-full" 
+                                         style="width: {{ emotion_data.percentage }}%; background-color: {{ emotion_data.color }}"></div>
+                                </div>
+                                <span class="font-medium text-gray-700 w-12 text-right">{{ emotion_data.percentage|floatformat:1 }}%</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Notas del análisis -->
+    {% if analysis.notes %}
+    <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-sticky-note mr-2 text-yellow-500"></i>
+            Notas del Análisis
+        </h2>
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+            <p class="text-gray-700">{{ analysis.notes }}</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Función para descargar resultados
+function downloadResults() {
+    const analysisData = {
+        id: {{ analysis.id }},
+        created_at: "{{ analysis.created_at|date:'c' }}",
+        faces_detected: {{ analysis.faces_detected }},
+        dominant_emotion: "{{ analysis.dominant_emotion|default:'' }}",
+        average_confidence: {{ analysis.average_confidence }},
+        processing_time: {{ analysis.processing_time }},
+        results: {{ analysis.analysis_results|safe }},
+        notes: "{{ analysis.notes|default:'' }}"
+    };
+    
+    const dataStr = JSON.stringify(analysisData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `emotion_analysis_{{ analysis.id }}_{{ analysis.created_at|date:"Y-m-d_H-i" }}.json`;
+    link.click();
+}
+
+// Función para compartir análisis
+function shareAnalysis() {
+    const shareData = {
+        title: 'Análisis de Emociones #{{ analysis.id }}',
+        text: 'He realizado un análisis de emociones que detectó {{ analysis.faces_detected }} rostro{{ analysis.faces_detected|pluralize:"s" }} con una confianza promedio de {{ analysis.average_confidence|floatformat:1 }}%',
+        url: window.location.href
+    };
+    
+    if (navigator.share) {
+        navigator.share(shareData);
+    } else {
+        // Fallback: copiar URL al portapapeles
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('URL copiada al portapapeles');
+        }).catch(() => {
+            prompt('Copia esta URL:', window.location.href);
+        });
+    }
+}
+</script>
+{% endblock %}

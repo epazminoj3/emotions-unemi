@@ -1,0 +1,94 @@
+{% extends 'generic/form_mixin.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block form %}
+<div class="px-4 sm:px-6 py-8 bg-gradient-to-br from-neutral-50 to-neutral-100 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header del formulario -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl mb-4 shadow-lg">
+                <i class="fas fa-bars text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-neutral-800 mb-2">Gestión de Menús</h1>
+            <p class="text-neutral-600">Crea y configura los elementos del menú de navegación</p>
+        </div>
+
+        <!-- Formulario principal -->
+        <div class="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
+            <!-- Header del formulario -->
+            <div class="bg-gradient-to-r from-primary-50 to-accent-50 px-6 py-5 border-b border-neutral-200">
+                <h2 class="text-xl font-bold text-neutral-800">Información del Menú</h2>
+                <p class="text-sm text-neutral-600 mt-1">Complete los datos para crear o editar el elemento del menú</p>
+            </div>
+
+            <!-- Contenido del formulario -->
+            <div class="p-8 space-y-8">
+                <!-- Campo Nombre -->
+                <div class="space-y-2">
+                    <label for="{{ form.name.id_for_label }}" class="flex items-center text-sm font-semibold text-neutral-700 mb-2">
+                        <div class="w-2 h-2 bg-primary-500 rounded-full mr-2"></div>
+                        {{ form.name.label }}
+                        <span class="text-danger-400 ml-1">*</span>
+                    </label>
+                    <div class="relative">
+                        {{ form.name }}
+                    </div>
+                    {% if form.name.errors %}
+                    <p class="text-sm text-danger-600 flex items-center mt-2">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        {{ form.name.errors.0 }}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Campo Icono -->
+                <div class="space-y-2">
+                    <label for="{{ form.icon.id_for_label }}" class="flex items-center text-sm font-semibold text-neutral-700 mb-2">
+                        <div class="w-2 h-2 bg-accent-500 rounded-full mr-2"></div>
+                        {{ form.icon.label }}
+                        <span class="text-danger-400 ml-1">*</span>
+                    </label>
+                    <div class="relative">
+                        {{ form.icon }}
+                    </div>
+                    
+                    <!-- Se coloca vista previa de iconos -->
+                    {% include 'components/icons_preview.html' %}
+                    
+                    {% if form.icon.errors %}
+                    <p class="text-sm text-danger-600 flex items-center mt-2">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        {{ form.icon.errors.0 }}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Campo Orden -->
+                <div class="space-y-2">
+                    <label for="{{ form.order.id_for_label }}" class="flex items-center text-sm font-semibold text-neutral-700 mb-2">
+                        <div class="w-2 h-2 bg-secondary-500 rounded-full mr-2"></div>
+                        {{ form.order.label }}
+                    </label>
+                    <div class="relative">
+                        {{ form.order }}
+                    </div>
+                    <div class="flex items-start space-x-2 mt-2">
+                        <i class="fas fa-lightbulb text-secondary-500 text-sm mt-0.5"></i>
+                        <p class="text-xs text-neutral-600">{{ form.order.help_text }}</p>
+                    </div>
+                    {% if form.order.errors %}
+                    <p class="text-sm text-danger-600 flex items-center mt-2">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        {{ form.order.errors.0 }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}
