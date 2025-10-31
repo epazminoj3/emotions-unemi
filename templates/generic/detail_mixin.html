@@ -1,0 +1,101 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-6xl">
+
+    <!-- Prueba de breadcrumbs o migas de pan, se pasa la info desde la vista como contexto -->
+    {% include "components/breadcrumbs.html" with breadcrumbs=breadcrumb_list %}
+
+    <!-- Cabecera con título y botones de acción -->
+    <div class="mb-6 sm:mb-8">
+        <div class="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+            <!-- Título con indicador visual -->
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:block w-1 h-8 lg:h-10 bg-gradient-to-b from-primary-500 to-accent-500 rounded-full"></div>
+                <div class="flex items-center space-x-3 sm:space-x-0 sm:block">
+                    <div class="w-10 h-10 sm:hidden bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-eye text-primary-600"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 leading-tight">{{ title }}</h1>
+                        <p class="text-sm text-gray-500 mt-1 hidden sm:block">Información detallada</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botón volver -->
+            <div class="flex-shrink-0">
+                <a href="javascript:history.back()" 
+                   class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-800 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105">
+                    <i class="fas fa-arrow-left text-xs mr-2"></i>
+                    <span class="hidden sm:inline">Volver</span>
+                    <span class="sm:hidden">Atrás</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Línea decorativa -->
+        <div class="mt-4 sm:mt-6">
+            <div class="w-full h-px bg-gradient-to-r from-primary-200 via-accent-200 to-transparent"></div>
+        </div>
+    </div>
+
+    <!-- Contenido del detalle -->
+    <div class="bg-white shadow-xl rounded-xl border border-gray-200 overflow-hidden mb-6">
+        <!-- Header del contenido -->
+        <div class="px-4 sm:px-6 py-4 bg-gradient-to-r from-primary-50 via-white to-accent-50 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-primary-500 rounded-full"></div>
+                    <div class="w-2 h-2 bg-accent-500 rounded-full"></div>
+                    <div class="w-2 h-2 bg-secondary-500 rounded-full"></div>
+                    <span class="text-sm font-medium text-gray-600 ml-2">Vista detallada</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenido principal -->
+        <div class="p-4 sm:p-6">
+            {% block detail_content %}
+            <!-- Contenido específico del detalle -->
+            <div class="space-y-6">
+                
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+    
+    <!-- Botones de acción flotantes (OPCIONAL)--> 
+    <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 lg:static lg:bottom-auto lg:right-auto">
+        <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3 sm:justify-end">
+            {% block detail_actions %}
+            {% endblock %}
+        </div>
+    </div>
+    
+    <!-- Card de información adicional (opcional) -->
+    <div class="mt-6 bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-lg p-4 hidden sm:block">
+        <div class="flex items-start space-x-3">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-info-circle text-xs text-white"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-800 mb-1">Información adicional</h3>
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Aquí puedes agregar información contextual o ayuda relacionada con el elemento que se está visualizando.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/detail.css' %}">
+{% endblock %}

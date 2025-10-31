@@ -1,0 +1,252 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario</title>
+
+    <!-- Para visualizar los icono de font Awesome (fas fa) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Iconos de las pestañas del navegador -->
+    <link rel="icon" href="{% static 'icons/favicon.ico' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
+
+    <!-- CDN de Tailwind como respaldo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Estilo del loading -->
+    <link rel="stylesheet" href="{% static 'css/loading.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex flex-col justify-center items-center p-4">
+    <!-- Componente de Loading -->
+    {% include "components/loading.html" %}
+<div class="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl w-full space-y-8">
+        <!-- Formulario -->
+        <div class="bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden">
+            <!-- Header del formulario -->
+            <div class="bg-gradient-to-r from-accent-500 to-accent-700 p-6 text-white">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-user-plus text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold">Crea tu cuenta</h2>
+                        <p class="text-sm text-white/80 mt-1">Completa la información para registrarte</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Header del formulario -->
+            <div class="px-6 py-4 bg-gradient-to-r from-primary-50 via-white to-accent-50 border-b border-gray-200">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-primary-500 rounded-full"></div>
+                    <div class="w-2 h-2 bg-accent-500 rounded-full"></div>
+                    <div class="w-2 h-2 bg-secondary-500 rounded-full"></div>
+                    <span class="text-sm font-medium text-gray-600 ml-2">Formulario de registro</span>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                {% if error %}
+                    <div class="bg-red-50 text-red-700 p-3 rounded-lg mb-4 flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span>{{ error }}</span>
+                    </div>
+                {% endif %}
+                
+                {% if form.non_field_errors %}
+                <div class="bg-red-50 text-red-700 p-3 rounded-lg mb-4">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span class="font-medium">Hay errores en el formulario:</span>
+                    </div>
+                    <ul class="list-disc pl-8 text-sm">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            
+                <form method="post" class="space-y-8" enctype="multipart/form-data" data-loading="true" data-loading-class="register-form">
+                    {% csrf_token %}
+                
+                <!-- Información de cuenta -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-neutral-100">
+                    <h3 class="text-lg font-semibold text-neutral-800 mb-5 flex items-center border-b border-neutral-100 pb-3">
+                        <span class="w-8 h-8 bg-primary-50 text-primary-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-user-circle"></i>
+                        </span>
+                        Información de cuenta
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                        <!-- Username -->
+                        <div class="form-group md:col-span-2">
+                            <label for="{{ form.username.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">
+                                Nombre de usuario <span class="text-danger-500">*</span>
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="text-xs text-danger-600 mt-1">{{ form.username.errors }}</div>
+                            {% endif %}
+                            <p class="text-xs text-neutral-500 mt-1">Tu nombre de usuario único en el sistema</p>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group md:col-span-2">
+                            <label for="{{ form.email.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">
+                                Correo electrónico <span class="text-danger-500">*</span>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-xs text-danger-600 mt-1">{{ form.email.errors }}</div>
+                            {% endif %}
+                            <p class="text-xs text-neutral-500 mt-1">Tu correo será utilizado para iniciar sesión</p>
+                        </div>
+                        
+                        <!-- Password -->
+                        <div class="form-group">
+                            <label for="{{ form.password1.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">
+                                Contraseña <span class="text-danger-500">*</span>
+                            </label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <div class="text-xs text-danger-600 mt-1">{{ form.password1.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Confirm Password -->
+                        <div class="form-group">
+                            <label for="{{ form.password2.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">
+                                Confirmar contraseña <span class="text-danger-500">*</span>
+                            </label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <div class="text-xs text-danger-600 mt-1">{{ form.password2.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información Personal -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-neutral-100">
+                    <h3 class="text-lg font-semibold text-neutral-800 mb-5 flex items-center border-b border-neutral-100 pb-3">
+                        <span class="w-8 h-8 bg-accent-50 text-accent-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-address-card"></i>
+                        </span>
+                        Información Personal
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                        <!-- Nombres -->
+                        <div class="form-group">
+                            <label for="{{ form.first_name.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">
+                                Nombres <span class="text-danger-500">*</span>
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-xs text-danger-600 mt-1">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Apellidos -->
+                        <div class="form-group">
+                            <label for="{{ form.last_name.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">
+                                Apellidos <span class="text-danger-500">*</span>
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-xs text-danger-600 mt-1">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- DNI -->
+                        <div class="form-group">
+                            <label for="{{ form.dni.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">
+                                Cédula/DNI
+                            </label>
+                            {{ form.dni }}
+                            {% if form.dni.errors %}
+                                <div class="text-xs text-danger-600 mt-1">{{ form.dni.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Phone -->
+                        <div class="form-group">
+                            <label for="{{ form.phone.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">
+                                Teléfono
+                            </label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="text-xs text-danger-600 mt-1">{{ form.phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Direction -->
+                        <div class="form-group md:col-span-2">
+                            <label for="{{ form.direction.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">
+                                Dirección
+                            </label>
+                            {{ form.direction }}
+                            {% if form.direction.errors %}
+                                <div class="text-xs text-danger-600 mt-1">{{ form.direction.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                    <!-- Botones de acción -->
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                        <!-- Link a login -->
+                        <div class="text-sm">
+                            <span class="text-neutral-600">¿Ya tienes una cuenta?</span>
+                            <a href="{% url 'security:signin' %}" class="font-medium text-primary-600 hover:text-primary-500 ml-1">
+                                Iniciar sesión
+                            </a>
+                        </div>
+                        
+                        <!-- Botón de registro -->
+                        <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500 transition-all duration-200">
+                            <i class="fas fa-user-plus mr-2"></i>
+                            Crear cuenta
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-4 text-center text-sm text-neutral-600 p-4 border-t border-neutral-200">
+                    <p class="text-xs">¿Tienes problemas para registrarte? <a href="#" class="text-accent-600 hover:underline">Contacta con soporte</a></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center text-sm text-neutral-600 mt-6">
+            <p>Al registrarte, aceptas nuestros <a href="#" class="text-primary-600 hover:text-primary-500">términos y condiciones</a> y <a href="#" class="text-primary-600 hover:text-primary-500">política de privacidad</a>.</p>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/loading.js' %}"></script>
+<script src="{% static 'js/tailwind-config.js' %}"></script>
+<script>
+    // Mostrar loading al enviar formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form[data-loading]');
+        if (form) {
+            form.addEventListener('submit', function() {
+                const loadingClass = this.dataset.loadingClass || 'default';
+                loading.show({customClass: loadingClass});
+            });
+        }
+    });
+</script>
+</body>
+</html>

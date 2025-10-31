@@ -1,0 +1,150 @@
+{% if is_paginated %}
+<div class="pagination-container bg-white border-t border-gray-200 px-4 py-3 sm:px-6">
+    <!-- Información de resultados - Visible en todas las pantallas -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+        <!-- Info de elementos -->
+        <div class="pagination-info">
+            <div class="flex items-center text-sm text-gray-700">
+                <div class="flex items-center space-x-1">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-alt text-xs text-primary-600"></i>
+                    </div>
+                    <span class="hidden sm:inline">Mostrando</span>
+                    <span class="font-semibold text-primary-600">{{ page_obj.start_index }}</span>
+                    <span class="hidden sm:inline">-</span>
+                    <span class="sm:hidden">-</span>
+                    <span class="font-semibold text-primary-600">{{ page_obj.end_index }}</span>
+                    <span class="hidden sm:inline">de</span>
+                    <span class="sm:hidden">/</span>
+                    <span class="font-semibold text-gray-900">{{ page_obj.paginator.count }}</span>
+                    <span class="hidden sm:inline">elementos</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navegación de páginas -->
+        <nav class="pagination-nav" aria-label="Navegación de páginas">
+            <!-- Paginación completa para desktop -->
+            <div class="hidden sm:flex">
+                <ul class="flex items-center space-x-1">
+                    {% if page_obj.has_previous %}
+                        <!-- Primera página -->
+                        <li>
+                            <a class="inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:text-primary-600 hover:border-primary-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" 
+               href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page=1" 
+               aria-label="Primera página" 
+               title="Primera página">
+                                <i class="fas fa-angle-double-left text-xs"></i>
+                            </a>
+                        </li>
+                        <!-- Página anterior -->
+                        <li>
+                            <a class="inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:text-primary-600 hover:border-primary-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" 
+               href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ page_obj.previous_page_number }}" 
+               aria-label="Página anterior" 
+               title="Página anterior">
+                                <i class="fas fa-angle-left text-xs"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <!-- Primera página deshabilitada -->
+                        <li>
+                            <span class="inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-300 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed">
+                                <i class="fas fa-angle-double-left text-xs"></i>
+                            </span>
+                        </li>
+                        <!-- Página anterior deshabilitada -->
+                        <li>
+                            <span class="inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-300 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed">
+                                <i class="fas fa-angle-left text-xs"></i>
+                            </span>
+                        </li>
+                    {% endif %}
+                    
+                    <!-- Números de página -->
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <!-- Página activa -->
+                            <li>
+                                <span class="inline-flex items-center justify-center w-10 h-10 text-sm font-bold text-white bg-gradient-to-r from-primary-500 to-accent-500 border border-primary-500 rounded-lg shadow-lg transform scale-105 ring-2 ring-primary-500 ring-opacity-50" aria-current="page">
+                                    {{ num }}
+                                </span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <!-- Páginas visibles -->
+                            <li>
+                                <a class="inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:text-primary-600 hover:border-primary-300 hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" 
+                   href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ num }}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <!-- Página siguiente -->
+                        <li>
+                            <a class="inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:text-primary-600 hover:border-primary-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" 
+               href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ page_obj.next_page_number }}" 
+               aria-label="Página siguiente" 
+               title="Página siguiente">
+                                <i class="fas fa-angle-right text-xs"></i>
+                            </a>
+                        </li>
+                        <!-- Última página -->
+                        <li>
+                            <a class="inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:text-primary-600 hover:border-primary-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" 
+               href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ page_obj.paginator.num_pages }}" 
+               aria-label="Última página" 
+               title="Última página">
+                                <i class="fas fa-angle-double-right text-xs"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <!-- Página siguiente deshabilitada -->
+                        <li>
+                            <span class="inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-300 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed">
+                                <i class="fas fa-angle-right text-xs"></i>
+                            </span>
+                        </li>
+                        <!-- Última página deshabilitada -->
+                        <li>
+                            <span class="inline-flex items-center justify-center w-10 h-10 text-sm font-medium text-gray-300 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed">
+                                <i class="fas fa-angle-double-right text-xs"></i>
+                            </span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <!-- Paginación simplificada para móviles -->
+            <div class="flex sm:hidden items-center justify-center space-x-2">
+                {% if page_obj.has_previous %}
+                    <a class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:text-primary-600 transition-all duration-200" 
+       href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-angle-left text-xs mr-1"></i>
+                        Anterior
+                    </a>
+                {% endif %}
+                
+                <!-- Indicador de página actual en móvil -->
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center justify-center px-3 py-2 text-sm font-bold text-white bg-gradient-to-r from-primary-500 to-accent-500 rounded-lg shadow-lg">
+                        {{ page_obj.number }}
+                    </span>
+                    <span class="text-sm text-gray-500">de</span>
+                    <span class="text-sm font-semibold text-gray-700">{{ page_obj.paginator.num_pages }}</span>
+                </div>
+                
+                {% if page_obj.has_next %}
+                    <a class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gradient-to-r hover:from-primary-50 hover:to-accent-50 hover:text-primary-600 transition-all duration-200" 
+       href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}page={{ page_obj.next_page_number }}">
+                        Siguiente
+                        <i class="fas fa-angle-right text-xs ml-1"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+</div>
+{% endif %}

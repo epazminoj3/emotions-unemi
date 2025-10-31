@@ -1,0 +1,35 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} {{name_pestaña}} {% endblock %}
+
+<!-- Bloques de contenido para el modal -->
+{% block header_modal %}
+    <p>Header del modal</p>
+{% endblock %}
+{% block content_modal %}
+    <p>Este es el contenido personalizado del modal.</p>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- Dashboard Content -->
+<div class="space-y-6">
+
+    <!-- Buscador Personalizado para modulos del sistema segun permisos -->
+    <div class="py-3 flex justify-center items-center">
+        {% include "components/module_search.html" with id="dashboard-module-search" placeholder="Buscar módulos del sistema..." modules=modules %}
+    </div>
+
+    <!-- Header Section -->
+    <div class="bg-gradient-primary rounded-2xl p-8 text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+        <div class="relative z-10">
+            <h1 class="text-3xl font-bold mb-2">Bienvenido al Dashboard</h1>
+            <p class="text-white/90 text-lg">Panel de control principal - Gestiona tu proyecto de manera eficiente</p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

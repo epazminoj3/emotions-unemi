@@ -1,0 +1,125 @@
+/* Animaciones sutiles y responsivas */
+    .detail-section {
+        animation: fadeInUp 0.4s ease-out;
+    }
+    
+    .detail-section:hover {
+        transform: translateY(-1px);
+    }
+    
+    /* Mejoras para imágenes de detalle */
+    .detail-image {
+        transition: all 0.3s ease;
+    }
+    
+    .detail-image:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Animación de entrada */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Mejoras para campos de detalle */
+    .detail-label {
+        position: relative;
+    }
+    
+    .detail-value {
+        position: relative;
+        padding-left: 0.5rem;
+    }
+    
+    .detail-value::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.25rem;
+        width: 2px;
+        height: 1rem;
+        background: linear-gradient(to bottom, #6366f1, #06b6d4);
+        border-radius: 1px;
+        opacity: 0.3;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+        .detail-section {
+            margin-bottom: 1rem;
+        }
+        
+        .detail-section:hover {
+            transform: none;
+        }
+        
+        /* Botones flotantes en móvil */
+        .fixed {
+            position: fixed;
+            z-index: 50;
+        }
+        
+        .fixed .inline-flex {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    }
+    
+    /* Efecto de hover mejorado para botones */
+    .inline-flex:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Grid responsivo para campos */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    @media (max-width: 640px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Clases helper para elementos de detalle */
+    .detail-field {
+        @apply space-y-1;
+    }
+    
+    .detail-label {
+        @apply block text-sm font-medium text-gray-600;
+    }
+    
+    .detail-value {
+        @apply text-sm text-gray-800 font-normal;
+    }
+    
+    .detail-section-header {
+        @apply mb-4 pb-3 border-b border-gray-200 relative;
+    }
+    
+    /* Estados para diferentes tipos de valores */
+    .detail-value.active {
+        @apply text-success-600 font-medium;
+    }
+    
+    .detail-value.inactive {
+        @apply text-gray-400;
+    }
+    
+    .detail-value.warning {
+        @apply text-warning-600;
+    }
+    
+    .detail-value.danger {
+        @apply text-danger-600;
+    }

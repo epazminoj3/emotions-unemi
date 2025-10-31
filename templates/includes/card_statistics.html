@@ -1,0 +1,18 @@
+<div class="stat-card {{ color|default:'bg-white' }} p-4 rounded-lg shadow hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-center">
+        <div>
+            <p class="text-sm text-gray-500 font-medium">{{ titulo_estadistica|default:"Estadística" }}</p>
+            <p class="text-2xl font-bold mt-1">{{ description|default:"0" }}</p>
+        </div>
+        <div class="icon-container {{ icon_bg|default:'bg-blue-100' }} p-3 rounded-full">
+            <i class="{{ icon|default:'fas fa-chart-bar' }} {{ icon_color|default:'text-blue-500' }} text-xl"></i>
+        </div>
+    </div>
+    {% if trend %}
+    <div class="mt-2">
+        <span class="{{ trend_color|default:'text-green-500' }}">
+            <i class="{{ trend_icon|default:'fas fa-arrow-up' }} mr-1"></i>{{ trend }}
+        </span>
+    </div>
+    {% endif %}
+</div>

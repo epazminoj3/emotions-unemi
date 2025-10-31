@@ -1,0 +1,35 @@
+{% if btn_type == "crear" %}
+    <a href="{{ url|default:'#' }}" class="no-underline" style="all:unset;">
+        <button id="{{ id }}" type="submit" class="btn btn-success" title="{{ title|default:'Crear' }}">
+            <i class="fa fa-plus"></i><p>Crear</p>
+        </button>
+    </a>
+{% elif btn_type == "editar" %}
+    <button id="{{ id }}" type="submit" class="btn btn-warning" title="{{ title|default:'Editar' }}">
+        <i class="fa fa-edit"></i>
+    </button>
+{% elif btn_type == "detalles" %}
+    <button id="{{ id }}" type="submit" class="btn btn-info" title="{{ title|default:'Detalles' }}">
+        <i class="fa fa-info-circle"></i>
+    </button>
+{% elif btn_type == "buscar" %}
+    <button id="{{ id }}" type="submit" class="btn btn-search" title="{{ title|default:'Buscar' }}">
+        <i class="fa fa-search"></i>
+    </button>
+{% elif btn_type == "recargar" %}
+    <button id="{{ id }}" type="submit" class="btn btn-recargar" title="{{ title|default:'Recargar' }}">
+        <i class="fa fa-sync"></i><p>Recargar</p>
+    </button>
+{% else %}
+    <button 
+        id="{{ id }}" 
+        type="{{ type|default:'submit' }}" 
+        class="btn {{ classes|default:'btn-secondary' }}" 
+        title="{{ title|default:'Guardar' }}"
+        >
+        <i class="{{ icon|default:'fa fa-save' }}"></i>
+        <p>
+            {{ label|default:"" }}
+        </p>
+    </button>
+{% endif %}
