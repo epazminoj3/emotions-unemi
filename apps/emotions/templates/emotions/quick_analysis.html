@@ -1,0 +1,463 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Análisis Rápido - Detección de Emociones{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumbs con botón de volver -->
+<div class="flex items-center justify-between mb-6">
+    {% include 'components/breadcrumbs.html' with items='Dashboard,Detección de Emociones,Análisis Rápido' %}
+    <a href="{% url 'emotions:dashboard' %}" 
+       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Volver al Dashboard
+    </a>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 text-white">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                    <i class="fas fa-bolt text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">Análisis Rápido</h1>
+                    <p class="text-blue-100">Analiza emociones sin guardar en el historial</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="p-6">
+            <form method="post" enctype="multipart/form-data" id="quickAnalysisForm" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Zona de subida de archivos -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-image mr-1"></i>
+                        Seleccionar Imagen para Análisis Rápido
+                    </label>
+                    
+                    <div id="dropZone" 
+                         class="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer">
+                        <div class="space-y-3">
+                            <div class="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-cloud-upload-alt text-2xl text-blue-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-lg font-medium text-gray-900">Arrastra una imagen aquí</p>
+                                <p class="text-sm text-gray-500">o haz clic para seleccionar archivo</p>
+                            </div>
+                            <p class="text-xs text-gray-400">PNG, JPG, JPEG hasta 10MB</p>
+                        </div>
+                        
+                        {{ form.image|add_class:"absolute inset-0 w-full h-full opacity-0 cursor-pointer" }}
+                    </div>
+                </div>
+
+                <!-- Vista previa de la imagen -->
+                <div id="imagePreview" class="hidden">
+                    <div class="relative bg-gray-100 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-medium text-gray-700">Vista Previa:</h3>
+                            <button type="button" 
+                                    id="removeImage" 
+                                    class="text-red-500 hover:text-red-700 text-sm">
+                                <i class="fas fa-times"></i> Quitar
+                            </button>
+                        </div>
+                        <img id="previewImg" 
+                             src="" 
+                             alt="Vista previa" 
+                             class="max-w-full h-auto max-h-64 mx-auto rounded-lg shadow-sm">
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                    <button type="submit" 
+                            id="analyzeBtn"
+                            class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <span id="analyzeText">
+                            <i class="fas fa-brain mr-2"></i>
+                            Analizar Emociones
+                        </span>
+                        <span id="analyzingText" class="hidden">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                            Analizando...
+                        </span>
+                    </button>
+                    
+                    <button type="button" 
+                            id="clearForm"
+                            class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors">
+                        <i class="fas fa-eraser mr-2"></i>
+                        Limpiar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Panel de resultados -->
+    <div id="resultsPanel" class="hidden mt-6 bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-green-50 px-6 py-4 border-b border-green-200">
+            <h2 class="text-xl font-bold text-green-800 flex items-center">
+                <i class="fas fa-check-circle mr-2"></i>
+                Resultados del Análisis
+            </h2>
+        </div>
+        
+        <div class="p-6">
+            <div id="analysisResults">
+                <!-- Los resultados se cargarán aquí dinámicamente -->
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Enlaces relacionados -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-link mr-2 text-blue-500"></i>
+            Otras Opciones de Análisis
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="{% url 'emotions:upload' %}" 
+               class="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg hover:from-green-100 hover:to-green-200 transition-colors group">
+                <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3 group-hover:bg-green-600 transition-colors">
+                    <i class="fas fa-upload text-white"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Subir y Guardar</h4>
+                    <p class="text-sm text-gray-600">Análisis completo</p>
+                </div>
+            </a>
+
+            <a href="{% url 'emotions:camera_analysis' %}" 
+               class="flex items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-colors group">
+                <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3 group-hover:bg-purple-600 transition-colors">
+                    <i class="fas fa-camera text-white"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Usar Cámara</h4>
+                    <p class="text-sm text-gray-600">Captura directa</p>
+                </div>
+            </a>
+
+            <a href="{% url 'emotions:real_time' %}" 
+               class="flex items-center p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-lg hover:from-red-100 hover:to-red-200 transition-colors group">
+                <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-600 transition-colors">
+                    <i class="fas fa-video text-white"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Tiempo Real</h4>
+                    <p class="text-sm text-gray-600">Video continuo</p>
+                </div>
+            </a>
+
+            <a href="{% url 'emotions:analysis_list' %}" 
+               class="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-colors group">
+                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-history text-white"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Ver Historial</h4>
+                    <p class="text-sm text-gray-600">Análisis anteriores</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.querySelector('input[type="file"]');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const removeImageBtn = document.getElementById('removeImage');
+    const form = document.getElementById('quickAnalysisForm');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const analyzeText = document.getElementById('analyzeText');
+    const analyzingText = document.getElementById('analyzingText');
+    const clearFormBtn = document.getElementById('clearForm');
+    const resultsPanel = document.getElementById('resultsPanel');
+    const analysisResults = document.getElementById('analysisResults');
+    
+    let currentAnalysisData = null;
+
+    // Manejar drag and drop
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('border-blue-500', 'bg-blue-50');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            showImagePreview(files[0]);
+        }
+    });
+
+    // Manejar cambio de archivo
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            showImagePreview(e.target.files[0]);
+        }
+    });
+
+    // Mostrar vista previa de imagen
+    function showImagePreview(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+                dropZone.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Quitar imagen
+    removeImageBtn.addEventListener('click', function() {
+        fileInput.value = '';
+        imagePreview.classList.add('hidden');
+        dropZone.classList.remove('hidden');
+        previewImg.src = '';
+        resultsPanel.classList.add('hidden');
+    });
+
+    // Limpiar formulario
+    clearFormBtn.addEventListener('click', function() {
+        fileInput.value = '';
+        imagePreview.classList.add('hidden');
+        dropZone.classList.remove('hidden');
+        previewImg.src = '';
+        resultsPanel.classList.add('hidden');
+        currentAnalysisData = null;
+    });
+
+    // Manejar envío del formulario
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!fileInput.value) {
+            alert('Por favor, selecciona una imagen primero');
+            return;
+        }
+
+        // Mostrar estado de carga
+        analyzeBtn.disabled = true;
+        analyzeText.classList.add('hidden');
+        analyzingText.classList.remove('hidden');
+        
+        try {
+            const formData = new FormData(form);
+            const response = await fetch("{% url 'emotions:quick_analysis' %}", {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                currentAnalysisData = data.analysis;
+                displayResults(data.analysis);
+                resultsPanel.classList.remove('hidden');
+                
+                // Scroll suave a los resultados
+                resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                alert('Error en el análisis: ' + (data.error || 'Error desconocido'));
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error conectando con el servidor');
+        } finally {
+            // Restaurar estado del botón
+            analyzeBtn.disabled = false;
+            analyzeText.classList.remove('hidden');
+            analyzingText.classList.add('hidden');
+        }
+    });
+
+    // Mostrar resultados
+    function displayResults(analysis) {
+        const emotions = {
+            'neutral': 'Neutral',
+            'happiness': 'Felicidad',
+            'surprise': 'Sorpresa',
+            'sadness': 'Tristeza',
+            'anger': 'Ira',
+            'disgust': 'Disgusto',
+            'fear': 'Miedo',
+            'contempt': 'Desprecio'
+        };
+        
+        let html = `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-friends text-2xl text-blue-500 mr-3"></i>
+                        <div>
+                            <p class="text-2xl font-bold text-blue-600">${analysis.faces_detected}</p>
+                            <p class="text-sm text-blue-600">Rostros Detectados</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-2xl text-green-500 mr-3"></i>
+                        <div>
+                            <p class="text-2xl font-bold text-green-600">${analysis.processing_time.toFixed(2)}s</p>
+                            <p class="text-sm text-green-600">Tiempo de Procesamiento</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-percentage text-2xl text-purple-500 mr-3"></i>
+                        <div>
+                            <p class="text-2xl font-bold text-purple-600">${(analysis.average_confidence * 100).toFixed(1)}%</p>
+                            <p class="text-sm text-purple-600">Confianza Promedio</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (analysis.faces && analysis.faces.length > 0) {
+            html += '<h3 class="text-lg font-semibold text-gray-900 mb-4">Análisis por Rostro</h3>';
+            html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+            
+            analysis.faces.forEach((face, index) => {
+                const topEmotion = Object.entries(face.emotions)
+                    .sort(([,a], [,b]) => b - a)[0];
+                
+                html += `
+                    <div class="bg-gray-50 p-4 rounded-lg border">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold text-gray-900">Rostro ${index + 1}</h4>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                                ${(face.confidence * 100).toFixed(1)}% confianza
+                            </span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p class="text-lg font-bold text-purple-600">
+                                ${emotions[topEmotion[0]]}
+                            </p>
+                            <p class="text-sm text-gray-600">${(topEmotion[1] * 100).toFixed(1)}% de probabilidad</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h5 class="text-sm font-medium text-gray-700">Todas las emociones:</h5>
+                `;
+                
+                Object.entries(face.emotions)
+                    .sort(([,a], [,b]) => b - a)
+                    .forEach(([emotion, confidence]) => {
+                        const percentage = (confidence * 100).toFixed(1);
+                        html += `
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600">${emotions[emotion]}</span>
+                                <div class="flex items-center">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                        <div class="bg-blue-500 h-2 rounded-full" style="width: ${percentage}%"></div>
+                                    </div>
+                                    <span class="font-medium text-gray-700 w-10 text-right">${percentage}%</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+        } else {
+            html += `
+                <div class="text-center py-8">
+                    <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-4"></i>
+                    <p class="text-lg text-gray-600">No se detectaron rostros en la imagen</p>
+                    <p class="text-sm text-gray-500">Intenta con una imagen que contenga rostros más visibles</p>
+                </div>
+            `;
+        }
+        
+        analysisResults.innerHTML = html;
+    }
+
+    // Botones de acción post-análisis
+    document.getElementById('saveToHistoryBtn').addEventListener('click', async function() {
+        if (!currentAnalysisData) return;
+        
+        try {
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+            
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            formData.append('analysis_data', JSON.stringify(currentAnalysisData));
+            
+            const response = await fetch("{% url 'emotions:upload' %}", {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                alert('Análisis guardado en tu historial exitosamente');
+            } else {
+                alert('Error al guardar en historial');
+            }
+            
+        } catch (error) {
+            alert('Error conectando con el servidor');
+        } finally {
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-save mr-2"></i>Guardar en Historial';
+        }
+    });
+
+    document.getElementById('downloadResultsBtn').addEventListener('click', function() {
+        if (!currentAnalysisData) return;
+        
+        const dataStr = JSON.stringify(currentAnalysisData, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `emotion_analysis_${new Date().toISOString()}.json`;
+        link.click();
+    });
+
+    document.getElementById('analyzeAnotherBtn').addEventListener('click', function() {
+        clearFormBtn.click();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'generic/list_mixin.html' %}
+{% load static %}
+
+{% block title %} {{ title }} {% endblock %}
+
+{% block card_statistics %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% include 'includes/card_statistics.html' with icon="fas fa-users" icon_bg="bg-blue-100" icon_color="text-blue-500" titulo_estadistica="Total Usuarios" description=total_users %}
+        {% include 'includes/card_statistics.html' with icon="fas fa-user-check" icon_bg="bg-green-100" icon_color="text-green-500" titulo_estadistica="Usuarios Activos" description=active_users %}
+        {% include 'includes/card_statistics.html' with icon="fas fa-user-shield" icon_bg="bg-purple-100" icon_color="text-purple-500" titulo_estadistica="Staff" description=staff_users %}
+    </div>
+{% endblock %}
+
+
+{% block action_buttons %}
+    {% if permissions.add_user %}
+        {% include "components/button.html" with url=create btn_type="crear" id="btn-crear-usuario" title="Crear nuevo usuario" %}
+    {% endif %}
+{% endblock %}
+
+{% block table_header %}
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Email</th>
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Grupos</th>
+    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Estado</th>
+    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for item in users %}
+    <tr class="hover:bg-gray-50">
+        <td class="px-6 py-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10">
+                    <img class="h-10 w-10 rounded-full" src="{{ item.get_image }}" alt="{{ item.get_full_name }}">
+                </div>
+                <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ item.get_full_name }}</div>
+                    <div class="text-sm text-gray-500">{{ item.username }}</div>
+                    <!-- Información adicional visible solo en móvil -->
+                    <div class="sm:hidden mt-2">
+                        <div class="text-xs text-gray-500 mb-1">Email: {{ item.email }}</div>
+                        <div class="flex flex-wrap gap-1 mb-1">
+                            {% if item.is_active %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Activo
+                            </span>
+                            {% else %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                Inactivo
+                            </span>
+                            {% endif %}
+                            {% if item.is_staff %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                Staff
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
+        <td class="px-6 py-4 hidden sm:table-cell">
+            <div class="text-sm text-gray-900">{{ item.email }}</div>
+            {% if item.dni %}
+            <div class="text-sm text-gray-500">DNI: {{ item.dni }}</div>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4 hidden md:table-cell">
+            <div class="text-sm text-gray-900">
+                {% for group in item.groups.all %}
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 mr-1 mb-1">
+                    {{ group.name }}
+                </span>
+                {% empty %}
+                <span class="text-gray-500">Sin grupos</span>
+                {% endfor %}
+            </div>
+        </td>
+        <td class="px-6 py-4 hidden sm:table-cell">
+            {% if item.is_active %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                Activo
+            </span>
+            {% else %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                Inactivo
+            </span>
+            {% endif %}
+            {% if item.is_staff %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 ml-1">
+                Staff
+            </span>
+            {% endif %}
+            {% if item.is_superuser %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800 ml-1">
+                Súper Usuario
+            </span>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4 text-right text-sm font-medium">
+            <div class="flex flex-col sm:flex-row gap-2 justify-end">
+
+                {% if permissions.view_user %}
+                <a href="{% url 'security:user_detail' item.id %}" class="no-underline" style="all:unset;">
+                    {% include "components/button.html" with url=detail btn_type="detalles" id="btn-detalles" title="Ver detalles" %}
+                </a>
+                {% endif %}
+
+                {% if permissions.change_user %}
+                <a href="{% url 'security:user_update' item.id %}" class="no-underline" style="all:unset;">
+                    {% include "components/button.html" with btn_type="editar" id="btn-editar" title="Editar" %}
+                </a>
+                {% endif %}
+                
+                {% if permissions.delete_user %}
+                <a href="{% url 'security:user_delete' item.id %}" class="btn btn-delete" title="Eliminar"
+                   data-title="¿Estás seguro de que deseas eliminar este usuario?"
+                   data-details='[
+                       {"icon": "fas fa-user", "label": "Usuario", "value": "{{ item.username }}"},
+                       {"icon": "fas fa-envelope", "label": "Email", "value": "{{ item.email|default:"No especificado" }}"},
+                       {"icon": "fas fa-id-card", "label": "Nombre", "value": "{% if item.first_name and item.last_name %}{{ item.first_name }} {{ item.last_name }}{% else %}No especificado{% endif %}"}
+                   ]'>
+                    <i class="fas fa-trash"></i>
+                </a>
+                {% endif %}
+
+            </div>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5" class="px-6 py-4 text-center">
+            <div class="empty-state py-8">
+                <i class="fas fa-users text-4xl text-gray-300 mb-2"></i>
+                <p class="text-gray-500">No se encontraron usuarios</p>
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+
+{% endblock %}

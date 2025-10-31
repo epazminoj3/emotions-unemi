@@ -1,0 +1,700 @@
+{% extends 'layouts/dashboard.html' %}
+{% load static %}
+
+{% block title %}Análisis con Cámara Web{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumbs con botón de volver -->
+<div class="flex items-center justify-between mb-6">
+    <a href="{% url 'emotions:dashboard' %}" 
+       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Volver al Dashboard
+    </a>
+</div>
+
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+        <!-- Header con gradiente moderno -->
+        <div class="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 px-8 py-6 text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-black opacity-10"></div>
+            <div class="relative z-10 flex items-center">
+                <div class="w-16 h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl flex items-center justify-center mr-5 shadow-lg">
+                    <i class="fas fa-camera text-3xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold mb-1">Análisis con Cámara Web</h2>
+                    <p class="text-blue-100">Captura y analiza emociones faciales en tiempo real</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="p-8">
+            {% csrf_token %}
+            <!-- Selector de cámara con diseño mejorado -->
+            <div class="mb-8 bg-gradient-to-r from-gray-50 to-blue-50 p-5 rounded-xl border border-blue-200">
+                <label for="cameraSelect" class="block text-sm font-bold text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-video mr-2 text-blue-600"></i>
+                    Seleccionar Cámara
+                </label>
+                <select id="cameraSelect" 
+                        class="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm hover:border-blue-400">
+                    <option value="">Detectando cámaras...</option>
+                </select>
+            </div>
+
+            <!-- Contenedor del video y preview con diseño profesional -->
+            <div class="relative mb-8">
+                <div id="videoContainer" class="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-700">
+                    <video id="videoElement" 
+                           class="w-full h-auto max-h-96 md:max-h-[500px] object-cover"
+                           autoplay 
+                           muted 
+                           playsinline>
+                    </video>
+                    
+                    <!-- Canvas overlay para detección en tiempo real -->
+                    <canvas id="overlayCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
+                    
+                    <!-- Overlay de estado mejorado -->
+                    <div id="videoOverlay" class="absolute top-5 right-5 bg-black bg-opacity-80 backdrop-blur-sm text-white px-4 py-2.5 rounded-full text-sm shadow-lg">
+                        <div class="flex items-center">
+                            <div id="statusIndicator" class="w-3 h-3 bg-red-500 rounded-full mr-3 animate-pulse"></div>
+                            <span id="statusText" class="font-medium">Cámara desactivada</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Guía visual -->
+                    <div class="absolute inset-0 pointer-events-none">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-5 left-0 right-0 text-center">
+                            <p class="text-white text-sm font-medium bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2 inline-block">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Centra tu rostro en el cuadro
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Canvas oculto para captura -->
+                    <canvas id="captureCanvas" class="hidden"></canvas>
+                </div>
+                
+                <!-- Preview de la foto capturada -->
+                <div id="photoPreview" class="hidden relative bg-gray-900 rounded-lg overflow-hidden shadow-lg mt-4">
+                    <div class="relative">
+                        <img id="previewImage" src="" alt="Foto Capturada" class="w-full h-auto max-h-96 md:max-h-[500px] object-contain">
+                        
+                        <!-- Badge con info -->
+                        <div class="absolute top-4 left-4 bg-green-500 text-white px-3 py-2 rounded-lg text-sm font-medium">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Foto Capturada
+                        </div>
+                        
+                        <!-- Botón para tomar nueva foto -->
+                        <button id="retakePhoto" 
+                                class="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fas fa-redo mr-1"></i>
+                            Tomar Otra
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4">
+                        <p class="text-white text-sm text-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Haz clic en "Analizar Emociones" para procesar esta imagen
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Controles de video -->
+                <div class="flex flex-wrap justify-center gap-3 mt-4">
+                    <button id="startCamera" 
+                            class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors">
+                        <i class="fas fa-play mr-2"></i>
+                        <span class="hidden sm:inline">Iniciar Cámara</span>
+                        <span class="sm:hidden">Iniciar</span>
+                    </button>
+                    
+                    <button id="stopCamera" 
+                            class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors" 
+                            disabled>
+                        <i class="fas fa-stop mr-2"></i>
+                        <span class="hidden sm:inline">Detener Cámara</span>
+                        <span class="sm:hidden">Detener</span>
+                    </button>
+                    
+                    <button id="capturePhoto" 
+                            class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors" 
+                            disabled>
+                        <i class="fas fa-camera mr-2"></i>
+                        <span class="hidden sm:inline">Capturar Foto</span>
+                        <span class="sm:hidden">Capturar</span>
+                    </button>
+                    
+                    <button id="analyzeCapture" 
+                            class="inline-flex items-center px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors" 
+                            disabled>
+                        <i class="fas fa-brain mr-2"></i>
+                        <span class="hidden sm:inline">Analizar Emociones</span>
+                        <span class="sm:hidden">Analizar</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel de resultados -->
+            <div id="resultsPanel" class="hidden bg-gray-50 rounded-lg p-6 mt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-chart-line mr-2 text-purple-500"></i>
+                    Resultados del Análisis
+                </h3>
+                
+                <div id="analysisResults" class="space-y-4">
+                    <!-- Los resultados se cargarán aquí dinámicamente -->
+                </div>
+
+                <!-- Opciones de guardado -->
+                <div class="mt-6 p-4 bg-white rounded-lg border">
+                    <div class="flex items-center mb-3">
+                        <input type="checkbox" 
+                               id="saveAnalysis" 
+                               checked
+                               class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500">
+                        <label for="saveAnalysis" class="ml-2 text-sm font-medium text-gray-700">
+                            Guardar análisis en mi historial
+                        </label>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="analysisNotes" class="block text-sm font-medium text-gray-700 mb-1">
+                            Notas (opcional):
+                        </label>
+                        <textarea id="analysisNotes" 
+                                  rows="2" 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                  placeholder="Añade cualquier observación sobre esta captura..."></textarea>
+                    </div>
+                    
+                    <button id="saveResults" 
+                            class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors">
+                        <i class="fas fa-save mr-2"></i>
+                        Guardar Análisis
+                    </button>
+                </div>
+            </div>
+
+            <!-- Enlaces relacionados -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Otras Opciones de Análisis</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a href="{% url 'emotions:upload' %}" 
+                       class="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg hover:from-green-100 hover:to-green-200 transition-colors group">
+                        <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3 group-hover:bg-green-600 transition-colors">
+                            <i class="fas fa-upload text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Subir Imagen</h4>
+                            <p class="text-sm text-gray-600">Analizar archivo existente</p>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'emotions:real_time' %}" 
+                       class="flex items-center p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-lg hover:from-red-100 hover:to-red-200 transition-colors group">
+                        <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-600 transition-colors">
+                            <i class="fas fa-video text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Tiempo Real</h4>
+                            <p class="text-sm text-gray-600">Stream continuo de video</p>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'emotions:analysis_list' %}" 
+                       class="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-colors group">
+                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-history text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Historial</h4>
+                            <p class="text-sm text-gray-600">Ver análisis anteriores</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+class CameraAnalysis {
+    constructor() {
+        this.video = document.getElementById('videoElement');
+        this.canvas = document.getElementById('captureCanvas');
+        this.overlayCanvas = document.getElementById('overlayCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.overlayCtx = this.overlayCanvas ? this.overlayCanvas.getContext('2d') : null;
+        this.stream = null;
+        this.devices = [];
+        this.selectedDeviceId = null;
+        this.lastCaptureData = null;
+        this.detectionInterval = null; // Para detección en tiempo real
+        
+        this.initializeElements();
+        this.bindEvents();
+        this.detectCameras();
+    }
+    
+    initializeElements() {
+        this.cameraSelect = document.getElementById('cameraSelect');
+        this.startBtn = document.getElementById('startCamera');
+        this.stopBtn = document.getElementById('stopCamera');
+        this.captureBtn = document.getElementById('capturePhoto');
+        this.analyzeBtn = document.getElementById('analyzeCapture');
+        this.saveBtn = document.getElementById('saveResults');
+        this.retakeBtn = document.getElementById('retakePhoto');
+        this.statusIndicator = document.getElementById('statusIndicator');
+        this.statusText = document.getElementById('statusText');
+        this.resultsPanel = document.getElementById('resultsPanel');
+        this.analysisResults = document.getElementById('analysisResults');
+        this.photoPreview = document.getElementById('photoPreview');
+        this.previewImage = document.getElementById('previewImage');
+        this.videoContainer = document.getElementById('videoContainer');
+        this.currentAnalysisData = null; // Guardar datos del análisis actual
+    }
+    
+    bindEvents() {
+        this.startBtn.addEventListener('click', () => this.startCamera());
+        this.stopBtn.addEventListener('click', () => this.stopCamera());
+        this.captureBtn.addEventListener('click', () => this.capturePhoto());
+        this.retakeBtn.addEventListener('click', () => this.retakePhoto());
+        this.analyzeBtn.addEventListener('click', () => this.analyzeCapture());
+        this.saveBtn.addEventListener('click', () => this.saveAnalysis());
+        this.cameraSelect.addEventListener('change', (e) => {
+            this.selectedDeviceId = e.target.value;
+            if (this.stream) {
+                this.startCamera(); // Reiniciar con nueva cámara
+            }
+        });
+    }
+    
+    async detectCameras() {
+        try {
+            // Primero solicitar permisos para poder obtener las etiquetas
+            // Esto es necesario porque enumerateDevices() solo muestra labels después de pedir permisos
+            console.log('Solicitando permisos de cámara...');
+            
+            try {
+                // Solicitar acceso temporal para obtener permisos
+                const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                tempStream.getTracks().forEach(track => track.stop()); // Detener inmediatamente
+                console.log('✓ Permisos concedidos');
+            } catch (permissionError) {
+                console.error('✗ Permisos denegados:', permissionError);
+                this.cameraSelect.innerHTML = '<option value="">Permisos de cámara denegados</option>';
+                alert('Por favor, permite el acceso a la cámara para continuar.');
+                return;
+            }
+            
+            // Ahora sí, enumerar dispositivos con labels
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            this.devices = devices.filter(device => device.kind === 'videoinput');
+            
+            console.log(`Cámaras detectadas: ${this.devices.length}`, this.devices);
+            
+            this.cameraSelect.innerHTML = '';
+            
+            if (this.devices.length === 0) {
+                this.cameraSelect.innerHTML = '<option value="">No se encontraron cámaras</option>';
+                console.error('✗ No se detectaron cámaras');
+                return;
+            }
+            
+            // Agregar opciones al selector
+            this.devices.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.textContent = device.label || `Cámara ${index + 1}`;
+                this.cameraSelect.appendChild(option);
+            });
+            
+            // Seleccionar primera cámara por defecto
+            if (this.devices.length > 0) {
+                this.selectedDeviceId = this.devices[0].deviceId;
+                this.cameraSelect.value = this.selectedDeviceId;
+            }
+            
+            console.log(`✓ ${this.devices.length} cámara(s) lista(s) para usar`);
+            
+        } catch (error) {
+            console.error('✗ Error detectando cámaras:', error);
+            this.cameraSelect.innerHTML = '<option value="">Error detectando cámaras</option>';
+            alert('Error al detectar cámaras. Por favor recarga la página.');
+        }
+    }
+    
+    async startCamera() {
+        try {
+            // Detener stream anterior si existe
+            if (this.stream) {
+                this.stopCamera();
+            }
+            
+            const constraints = {
+                video: {
+                    deviceId: this.selectedDeviceId ? { exact: this.selectedDeviceId } : undefined,
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            };
+            
+            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.video.srcObject = this.stream;
+            
+            // Configurar canvas overlay cuando el video esté listo
+            this.video.addEventListener('loadedmetadata', () => {
+                if (this.overlayCanvas) {
+                    this.overlayCanvas.width = this.video.videoWidth;
+                    this.overlayCanvas.height = this.video.videoHeight;
+                }
+                // NO iniciar detección en tiempo real - solo al capturar
+            });
+            
+            this.updateStatus(true, 'Cámara activa');
+            this.startBtn.disabled = true;
+            this.stopBtn.disabled = false;
+            this.captureBtn.disabled = false;
+            
+        } catch (error) {
+            console.error('Error iniciando cámara:', error);
+            this.updateStatus(false, 'Error al acceder a la cámara');
+            alert('No se pudo acceder a la cámara. Verifica los permisos.');
+        }
+    }
+    
+    stopCamera() {
+        // NO hay detección en tiempo real para detener
+        
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
+        }
+        
+        this.video.srcObject = null;
+        
+        // Limpiar canvas overlay
+        if (this.overlayCtx) {
+            this.overlayCtx.clearRect(0, 0, this.overlayCanvas.width, this.overlayCanvas.height);
+        }
+
+        this.updateStatus(false, 'Cámara desactivada');
+        this.startBtn.disabled = false;
+        this.stopBtn.disabled = true;
+        this.captureBtn.disabled = true;
+        this.analyzeBtn.disabled = true;
+        this.resultsPanel.classList.add('hidden');
+    }
+    
+    capturePhoto() {
+        if (!this.stream) {
+            alert('Primero inicia la cámara');
+            return;
+        }
+        
+        // Configurar canvas con el tamaño del video
+        this.canvas.width = this.video.videoWidth;
+        this.canvas.height = this.video.videoHeight;
+        
+        // Dibujar frame actual en canvas
+        this.ctx.drawImage(this.video, 0, 0);
+        
+        // Obtener datos base64
+        this.lastCaptureData = this.canvas.toDataURL('image/jpeg', 0.8);
+        
+        // Mostrar preview
+        this.previewImage.src = this.lastCaptureData;
+        this.videoContainer.classList.add('hidden');
+        this.photoPreview.classList.remove('hidden');
+        
+        // Habilitar botón de analizar
+        this.analyzeBtn.disabled = false;
+        
+        // Deshabilitar botones de control de cámara
+        this.captureBtn.disabled = true;
+        
+        this.updateStatus(true, 'Foto capturada - Lista para analizar');
+        
+        // Scroll suave hacia el preview
+        this.photoPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    retakePhoto() {
+        // Ocultar preview y mostrar video de nuevo
+        this.photoPreview.classList.add('hidden');
+        this.videoContainer.classList.remove('hidden');
+        
+        // Habilitar captura, deshabilitar análisis
+        this.captureBtn.disabled = false;
+        this.analyzeBtn.disabled = true;
+        
+        // Ocultar resultados si los hay
+        this.resultsPanel.classList.add('hidden');
+        
+        // Limpiar datos de captura
+        this.lastCaptureData = null;
+        this.currentAnalysisData = null;
+        
+        this.updateStatus(true, 'Cámara activa - Lista para capturar');
+    }
+    
+    async analyzeCapture() {
+        if (!this.lastCaptureData) {
+            alert('Primero captura una foto');
+            return;
+        }
+        
+        try {
+            this.analyzeBtn.disabled = true;
+            this.analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Analizando...';
+            
+            const response = await fetch("{% url 'emotions:api_analyze_base64' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCsrfToken()
+                },
+                body: JSON.stringify({
+                    image_data: this.lastCaptureData
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Guardar datos del análisis para poder guardarlos después
+                this.currentAnalysisData = data.analysis;
+                this.displayResults(data.analysis);
+                this.resultsPanel.classList.remove('hidden');
+                
+                // Dibujar cuadros verdes sobre los rostros detectados
+                this.drawFaceBoxes(data.analysis.faces);
+                
+                // Scroll hacia resultados
+                this.resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                alert('Error en el análisis: ' + (data.error || 'Error desconocido'));
+            }
+            
+        } catch (error) {
+            console.error('Error analizando:', error);
+            alert('Error conectando con el servidor');
+            
+        } finally {
+            this.analyzeBtn.disabled = false;
+            this.analyzeBtn.innerHTML = '<i class="fas fa-brain mr-2"></i><span class="hidden sm:inline">Analizar Emociones</span><span class="sm:hidden">Analizar</span>';
+        }
+    }
+    
+    displayResults(analysis) {
+        const emotions = {
+            'neutral': 'Neutral',
+            'happiness': 'Felicidad',
+            'surprise': 'Sorpresa',
+            'sadness': 'Tristeza',
+            'anger': 'Ira',
+            'disgust': 'Disgusto',
+            'fear': 'Miedo',
+            'contempt': 'Desprecio'
+        };
+        
+        let html = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white p-4 rounded-lg border">
+                    <h4 class="font-semibold text-gray-900 mb-2 flex items-center">
+                        <i class="fas fa-user-friends mr-2 text-blue-500"></i>
+                        Rostros Detectados: ${analysis.faces_detected}
+                    </h4>
+                    <p class="text-sm text-gray-600">Tiempo de procesamiento: ${analysis.processing_time.toFixed(2)}s</p>
+                </div>
+        `;
+        
+        if (analysis.faces && analysis.faces.length > 0) {
+            analysis.faces.forEach((face, index) => {
+                const topEmotion = Object.entries(face.emotions)
+                    .sort(([,a], [,b]) => b - a)[0];
+                
+                html += `
+                    <div class="bg-white p-4 rounded-lg border">
+                        <h4 class="font-semibold text-gray-900 mb-2">Rostro ${index + 1}</h4>
+                        <p class="text-lg font-bold text-purple-600 mb-2">
+                            ${emotions[topEmotion[0]]} (${(topEmotion[1] * 100).toFixed(1)}%)
+                        </p>
+                        <div class="space-y-1">
+                `;
+                
+                Object.entries(face.emotions)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 3)
+                    .forEach(([emotion, confidence]) => {
+                        html += `
+                            <div class="flex justify-between items-center text-sm">
+                                <span>${emotions[emotion]}</span>
+                                <span class="font-medium">${(confidence * 100).toFixed(1)}%</span>
+                            </div>
+                        `;
+                    });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        html += '</div>';
+        this.analysisResults.innerHTML = html;
+    }
+    
+    async saveAnalysis() {
+        const saveCheckbox = document.getElementById('saveAnalysis');
+        const notesTextarea = document.getElementById('analysisNotes');
+        
+        if (!saveCheckbox.checked) {
+            alert('Por favor marca la casilla "Guardar análisis en mi historial"');
+            return;
+        }
+        
+        if (!this.lastCaptureData || !this.currentAnalysisData) {
+            alert('No hay datos para guardar. Primero captura y analiza una foto.');
+            return;
+        }
+        
+        try {
+            this.saveBtn.disabled = true;
+            this.saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+            
+            const response = await fetch("{% url 'emotions:api_save_camera_analysis' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCsrfToken()
+                },
+                body: JSON.stringify({
+                    image_data: this.lastCaptureData,
+                    analysis_results: this.currentAnalysisData,
+                    notes: notesTextarea.value
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Mostrar mensaje de éxito
+                alert('✅ Análisis guardado exitosamente en tu historial');
+                
+                // Preguntar si quiere ver el detalle o hacer otro análisis
+                if (confirm('¿Quieres ver el detalle del análisis guardado?')) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    // Limpiar todo para nuevo análisis
+                    this.retakePhoto();
+                    notesTextarea.value = '';
+                }
+            } else {
+                alert('Error al guardar: ' + (data.error || 'Error desconocido'));
+            }
+            
+        } catch (error) {
+            console.error('Error guardando:', error);
+            alert('Error conectando con el servidor');
+            
+        } finally {
+            this.saveBtn.disabled = false;
+            this.saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Guardar Análisis';
+        }
+    }
+    
+    updateStatus(active, text) {
+        this.statusIndicator.className = `w-2 h-2 rounded-full mr-2 ${active ? 'bg-green-500' : 'bg-red-500'}`;
+        this.statusText.textContent = text;
+    }
+    
+    // Dibujar cuadros verdes sobre rostros detectados
+    drawFaceBoxes(faces) {
+        if (!this.overlayCtx || !faces || faces.length === 0) {
+            // Limpiar canvas si no hay rostros
+            if (this.overlayCtx) {
+                this.overlayCtx.clearRect(0, 0, this.overlayCanvas.width, this.overlayCanvas.height);
+            }
+            return;
+        }
+        
+        // Limpiar canvas
+        this.overlayCtx.clearRect(0, 0, this.overlayCanvas.width, this.overlayCanvas.height);
+        
+        // Calcular escalado entre canvas de captura y overlay
+        const scaleX = this.overlayCanvas.width / this.canvas.width;
+        const scaleY = this.overlayCanvas.height / this.canvas.height;
+        
+        // Dibujar cada rostro
+        faces.forEach(face => {
+            const coords = face.coordinates || face;
+            const x = coords.x * scaleX;
+            const y = coords.y * scaleY;
+            const w = coords.width * scaleX;
+            const h = coords.height * scaleY;
+            
+            // Cuadro verde
+            this.overlayCtx.strokeStyle = '#10B981';
+            this.overlayCtx.lineWidth = 3;
+            this.overlayCtx.strokeRect(x, y, w, h);
+            
+            // Etiqueta con emoción y confianza (solo si está disponible)
+            if (face.dominant_emotion && face.confidence) {
+                const emotionNames = {
+                    'neutral': 'Neutral',
+                    'happiness': 'Feliz',
+                    'surprise': 'Sorpresa',
+                    'sadness': 'Triste',
+                    'anger': 'Enojado',
+                    'disgust': 'Disgusto',
+                    'fear': 'Miedo',
+                    'contempt': 'Desprecio'
+                };
+                
+                const label = `${emotionNames[face.dominant_emotion] || face.dominant_emotion} ${(face.confidence * 100).toFixed(0)}%`;
+                const labelWidth = label.length * 9;
+                
+                // Fondo de la etiqueta
+                this.overlayCtx.fillStyle = '#10B981';
+                this.overlayCtx.fillRect(x, y - 25, labelWidth, 25);
+                
+                // Texto de la etiqueta
+                this.overlayCtx.fillStyle = '#FFFFFF';
+                this.overlayCtx.font = 'bold 14px Arial';
+                this.overlayCtx.fillText(label, x + 5, y - 7);
+            }
+        });
+    }
+    
+    getCsrfToken() {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]');
+        return token ? token.value : '';
+    }
+}
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+    new CameraAnalysis();
+});
+
+// Limpiar al salir de la página
+window.addEventListener('beforeunload', () => {
+    if (window.cameraAnalysis && window.cameraAnalysis.stream) {
+        window.cameraAnalysis.stopCamera();
+    }
+});
+</script>
+{% endblock %}

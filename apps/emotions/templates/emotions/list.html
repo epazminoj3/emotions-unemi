@@ -1,0 +1,442 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Historial de Análisis - Detección de Emociones{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumbs con botón de volver -->
+<div class="flex items-center justify-between mb-6">
+    {% include 'components/breadcrumbs.html' with items='Dashboard,Detección de Emociones,Historial de Análisis' %}
+    <a href="{% url 'emotions:dashboard' %}" 
+       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Volver al Dashboard
+    </a>
+</div>
+
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow mb-6 p-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-history mr-3 text-blue-500"></i>
+                    Historial de Análisis
+                </h1>
+                <p class="text-gray-600 mt-1">Visualiza y gestiona todos tus análisis de emociones</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a href="{% url 'emotions:upload' %}" 
+                   class="inline-flex items-center justify-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors">
+                    <i class="fas fa-plus mr-2"></i>
+                    Nuevo Análisis
+                </a>
+                <a href="{% url 'emotions:real_time' %}" 
+                   class="inline-flex items-center justify-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors">
+                    <i class="fas fa-video mr-2"></i>
+                    Tiempo Real
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <div class="bg-white rounded-lg shadow mb-6 p-6">
+        <form method="get" id="filterForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Búsqueda -->
+                <div class="md:col-span-2">
+                    <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-search mr-1"></i>
+                        Buscar:
+                    </label>
+                    <input type="text" 
+                           id="search" 
+                           name="search" 
+                           value="{{ request.GET.search }}"
+                           placeholder="Buscar en notas o ID..."
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <!-- Filtro por emoción -->
+                <div>
+                    <label for="emotion" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-smile mr-1"></i>
+                        Emoción:
+                    </label>
+                    <select id="emotion" 
+                            name="emotion" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all">Todas las emociones</option>
+                        <option value="happiness" {% if request.GET.emotion == 'happiness' %}selected{% endif %}>Felicidad</option>
+                        <option value="sadness" {% if request.GET.emotion == 'sadness' %}selected{% endif %}>Tristeza</option>
+                        <option value="anger" {% if request.GET.emotion == 'anger' %}selected{% endif %}>Ira</option>
+                        <option value="surprise" {% if request.GET.emotion == 'surprise' %}selected{% endif %}>Sorpresa</option>
+                        <option value="fear" {% if request.GET.emotion == 'fear' %}selected{% endif %}>Miedo</option>
+                        <option value="disgust" {% if request.GET.emotion == 'disgust' %}selected{% endif %}>Disgusto</option>
+                        <option value="contempt" {% if request.GET.emotion == 'contempt' %}selected{% endif %}>Desprecio</option>
+                        <option value="neutral" {% if request.GET.emotion == 'neutral' %}selected{% endif %}>Neutral</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro por fecha -->
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-calendar mr-1"></i>
+                        Fecha:
+                    </label>
+                    <select id="date" 
+                            name="date" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Todas las fechas</option>
+                        <option value="today" {% if request.GET.date == 'today' %}selected{% endif %}>Hoy</option>
+                        <option value="yesterday" {% if request.GET.date == 'yesterday' %}selected{% endif %}>Ayer</option>
+                        <option value="week" {% if request.GET.date == 'week' %}selected{% endif %}>Esta semana</option>
+                        <option value="month" {% if request.GET.date == 'month' %}selected{% endif %}>Este mes</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-2">
+                <button type="submit" 
+                        class="inline-flex items-center justify-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors">
+                    <i class="fas fa-search mr-2"></i>
+                    Buscar
+                </button>
+                <a href="{% url 'emotions:analysis_list' %}" 
+                   class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors">
+                    <i class="fas fa-eraser mr-2"></i>
+                    Limpiar Filtros
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de análisis -->
+    {% if page_obj.object_list %}
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+        {% for analysis in page_obj.object_list %}
+        <div class="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-300 transform hover:-translate-y-1">
+            <!-- Imagen del análisis con overlay -->
+            <div class="relative h-52 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden group">
+                {% if analysis.image %}
+                <img src="{{ analysis.image.url }}" 
+                     alt="Análisis #{{ analysis.id }}" 
+                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center">
+                    <i class="fas fa-image text-6xl text-gray-300"></i>
+                </div>
+                {% endif %}
+                
+                <!-- Badge de rostros detectados -->
+                <div class="absolute top-3 right-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg flex items-center space-x-1">
+                    <i class="fas fa-users"></i>
+                    <span>{{ analysis.faces_detected }} rostro{{ analysis.faces_detected|pluralize:"s" }}</span>
+                </div>
+                
+                <!-- Badge de emoción dominante -->
+                {% if analysis.dominant_emotion %}
+                <div class="absolute bottom-3 left-3 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg emotion-badge-{{ analysis.dominant_emotion }} flex items-center space-x-1.5">
+                    <i class="fas fa-smile"></i>
+                    <span>{{ analysis.get_dominant_emotion_display|upper }}</span>
+                </div>
+                {% endif %}
+                
+                <!-- Overlay con fecha en hover -->
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-end justify-end p-3">
+                    <div class="bg-white bg-opacity-90 px-2 py-1 rounded text-xs font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        {{ analysis.created_at|date:"d/m/Y H:i" }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contenido de la tarjeta -->
+            <div class="p-5">
+                <!-- Header con ID y fecha -->
+                <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                        <span class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-2 py-0.5 rounded text-sm mr-2">#{{ analysis.id }}</span>
+                        Análisis
+                    </h3>
+                    <span class="text-xs text-gray-500 font-medium">
+                        {{ analysis.created_at|date:"d/m/y" }}
+                    </span>
+                </div>
+                
+                <!-- Estadísticas del análisis -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg border border-blue-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-blue-600 font-medium mb-0.5">Rostros</p>
+                                <p class="text-xl font-bold text-blue-700">{{ analysis.faces_detected }}</p>
+                            </div>
+                            <i class="fas fa-user-friends text-2xl text-blue-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg border border-green-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-green-600 font-medium mb-0.5">Confianza</p>
+                                <p class="text-xl font-bold text-green-700">{{ analysis.average_confidence|floatformat:0 }}%</p>
+                            </div>
+                            <i class="fas fa-chart-line text-2xl text-green-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tiempo de procesamiento -->
+                <div class="flex items-center text-xs text-gray-600 mb-3 bg-gray-50 px-3 py-2 rounded-lg">
+                    <i class="fas fa-stopwatch mr-2 text-purple-500"></i>
+                    <span class="font-medium">Procesado en {{ analysis.processing_time|floatformat:2 }}s</span>
+                </div>
+                
+                <!-- Notas (si existen) -->
+                {% if analysis.notes %}
+                <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p class="text-xs text-gray-700 italic line-clamp-2">
+                        <i class="fas fa-sticky-note mr-1 text-yellow-600"></i>
+                        "{{ analysis.notes|truncatewords:15 }}"
+                    </p>
+                </div>
+                {% endif %}
+                
+                <!-- Acciones con iconos mejorados -->
+                <div class="flex gap-2 pt-3 border-t border-gray-100">
+                    <a href="{% url 'emotions:analysis_detail' analysis.pk %}" 
+                       class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                        <i class="fas fa-eye mr-2"></i>
+                        <span>Ver Detalle</span>
+                    </a>
+                    <button onclick="confirmDelete('{{ analysis.pk }}', '{{ analysis.id }}')"
+                       class="inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                       title="Eliminar análisis">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Paginación -->
+    {% if page_obj.has_other_pages %}
+    {% include 'includes/pagination.html' with page_obj=page_obj %}
+    {% endif %}
+    
+    {% else %}
+    <!-- Estado vacío mejorado -->
+    <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl p-12 text-center border border-gray-100">
+        <div class="max-w-md mx-auto">
+            <!-- Icono animado -->
+            <div class="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <i class="fas fa-search text-5xl text-blue-500 animate-pulse"></i>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">
+                {% if request.GET.search or request.GET.emotion != 'all' or request.GET.date %}
+                    No se encontraron análisis
+                {% else %}
+                    ¡Comienza tu primer análisis!
+                {% endif %}
+            </h3>
+            
+            {% if request.GET.search or request.GET.emotion != 'all' or request.GET.date %}
+                <p class="text-gray-600 mb-8 text-lg">No hay análisis que coincidan con los filtros aplicados. Intenta ajustar tus criterios de búsqueda.</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{% url 'emotions:analysis_list' %}" 
+                       class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <i class="fas fa-eraser mr-2"></i>
+                        Limpiar Filtros
+                    </a>
+                    <a href="{% url 'emotions:upload' %}" 
+                       class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <i class="fas fa-plus mr-2"></i>
+                        Crear Nuevo Análisis
+                    </a>
+                </div>
+            {% else %}
+                <p class="text-gray-600 mb-8 text-lg">Aún no has realizado ningún análisis de emociones. ¡Es fácil y rápido empezar!</p>
+                
+                <!-- Tarjetas de opciones -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100 hover:border-green-300 transition-all">
+                        <i class="fas fa-upload text-3xl text-green-500 mb-2"></i>
+                        <h4 class="font-semibold text-gray-800 mb-1">Subir Imagen</h4>
+                        <p class="text-xs text-gray-600">Analiza fotos guardadas</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100 hover:border-purple-300 transition-all">
+                        <i class="fas fa-camera text-3xl text-purple-500 mb-2"></i>
+                        <h4 class="font-semibold text-gray-800 mb-1">Usar Cámara</h4>
+                        <p class="text-xs text-gray-600">Captura fotos al instante</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100 hover:border-red-300 transition-all">
+                        <i class="fas fa-video text-3xl text-red-500 mb-2"></i>
+                        <h4 class="font-semibold text-gray-800 mb-1">Tiempo Real</h4>
+                        <p class="text-xs text-gray-600">Análisis continuo en vivo</p>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{% url 'emotions:upload' %}" 
+                       class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <i class="fas fa-upload mr-2"></i>
+                        Subir Imagen
+                    </a>
+                    <a href="{% url 'emotions:camera_analysis' %}" 
+                       class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <i class="fas fa-camera mr-2"></i>
+                        Usar Cámara
+                    </a>
+                    <a href="{% url 'emotions:real_time' %}" 
+                       class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <i class="fas fa-video mr-2"></i>
+                        Análisis en Tiempo Real
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Badges de emociones con gradientes modernos */
+.emotion-badge-happiness { 
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white; 
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+}
+.emotion-badge-sadness { 
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+}
+.emotion-badge-anger { 
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
+}
+.emotion-badge-surprise { 
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+}
+.emotion-badge-fear { 
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3);
+}
+.emotion-badge-disgust { 
+    background: linear-gradient(135deg, #84CC16 0%, #65A30D 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(132, 204, 22, 0.3);
+}
+.emotion-badge-contempt { 
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(249, 115, 22, 0.3);
+}
+.emotion-badge-neutral { 
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(107, 114, 128, 0.3);
+}
+
+/* Truncar texto con elipsis */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Animación suave para las tarjetas */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bg-white {
+    animation: slideInUp 0.5s ease-out;
+}
+
+/* Responsivo: mejorar en móviles */
+@media (max-width: 640px) {
+    .grid {
+        gap: 1rem;
+    }
+    
+    .text-xl {
+        font-size: 1.125rem;
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit en cambio de filtros
+    const emotionSelect = document.getElementById('emotion');
+    const dateSelect = document.getElementById('date');
+    
+    emotionSelect.addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+    
+    dateSelect.addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+});
+
+// Función para confirmar eliminación con SweetAlert2
+function confirmDelete(analysisId, analysisNumber) {
+    Swal.fire({
+        title: '¿Eliminar análisis?',
+        html: `¿Estás seguro de que deseas eliminar el <strong>Análisis #${analysisNumber}</strong>?<br><small class="text-gray-500">Esta acción no se puede deshacer.</small>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#EF4444',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: '<i class="fas fa-trash mr-2"></i>Sí, eliminar',
+        cancelButtonText: '<i class="fas fa-times mr-2"></i>Cancelar',
+        reverseButtons: true,
+        backdrop: true,
+        customClass: {
+            confirmButton: 'font-semibold px-6 py-2.5 rounded-lg',
+            cancelButton: 'font-semibold px-6 py-2.5 rounded-lg'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Eliminando...',
+                html: 'Por favor espera un momento',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Redirigir a la URL de eliminación
+            window.location.href = `/emotions/analysis/${analysisId}/delete/`;
+        }
+    });
+}
+</script>
+{% endblock %}

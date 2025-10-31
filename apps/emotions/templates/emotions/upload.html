@@ -1,0 +1,270 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Subir Imagen para Análisis{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumbs con botón de volver -->
+<div class="flex items-center justify-between mb-6">
+    {% include 'components/breadcrumbs.html' with items='Dashboard,Detección de Emociones,Subir Imagen' %}
+    <a href="{% url 'emotions:dashboard' %}" 
+       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Volver al Dashboard
+    </a>
+</div>
+
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="text-center mb-6">
+            <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-upload text-2xl text-green-600"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ title }}</h1>
+            <p class="text-gray-600">Sube una imagen que contenga rostros para analizar las emociones detectadas</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="uploadForm" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Campo de imagen -->
+            <div>
+                <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.image.label }}
+                </label>
+                
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors" id="dropZone">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="{{ form.image.id_for_label }}" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                <span>Subir un archivo</span>
+                                {{ form.image|add_class:"sr-only" }}
+                            </label>
+                            <p class="pl-1">o arrastra y suelta</p>
+                        </div>
+                        <p class="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                    </div>
+                </div>
+                
+                {% if form.image.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {{ form.image.errors.0 }}
+                    </div>
+                {% endif %}
+                
+                {% if form.image.help_text %}
+                    <p class="mt-2 text-sm text-gray-500">{{ form.image.help_text }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Vista previa de la imagen -->
+            <div id="imagePreview" class="hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Vista previa:</label>
+                <div class="border rounded-lg p-4 bg-gray-50">
+                    <img id="previewImg" src="" alt="Vista previa" class="max-w-full h-auto rounded-lg mx-auto" style="max-height: 300px;">
+                    <div class="mt-2 text-center">
+                        <button type="button" id="removeImage" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                            ❌ Quitar imagen
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campo de notas -->
+            <div>
+                <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.notes.label }}
+                </label>
+                {{ form.notes|add_class:"block w-full p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500" }}
+                {% if form.notes.errors %}
+                    <div class="mt-2 text-sm text-red-600">
+                        {{ form.notes.errors.0 }}
+                    </div>
+                {% endif %}
+                {% if form.notes.help_text %}
+                    <p class="mt-2 text-sm text-gray-500">{{ form.notes.help_text }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Información sobre el análisis -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800">Información sobre el análisis</h3>
+                        <div class="mt-2 text-sm text-blue-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>El sistema detectará automáticamente rostros en la imagen</li>
+                                <li>Se analizarán 8 emociones: felicidad, tristeza, ira, sorpresa, miedo, disgusto, desprecio y neutral</li>
+                                <li>Los resultados incluirán la confianza de cada predicción</li>
+                                <li>El análisis se guardará en tu historial personal</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="flex space-x-3">
+                <button type="submit" id="submitBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <span id="submitText">📤 Subir y Analizar</span>
+                    <span id="loadingText" class="hidden">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Analizando...
+                    </span>
+                </button>
+                <a href="{% url 'emotions:dashboard' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+
+        <!-- Enlaces relacionados -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <h3 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                <i class="fas fa-link mr-2 text-blue-500"></i>
+                Otras opciones de análisis
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a href="{% url 'emotions:quick_analysis' %}" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors">
+                        <i class="fas fa-bolt text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">Análisis Rápido</p>
+                        <p class="text-sm text-gray-500">Sin guardar en historial</p>
+                    </div>
+                </a>
+                <a href="{% url 'emotions:camera_analysis' %}" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-purple-200 transition-colors">
+                        <i class="fas fa-camera text-purple-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">Usar Cámara</p>
+                        <p class="text-sm text-gray-500">Captura desde webcam</p>
+                    </div>
+                </a>
+                <a href="{% url 'emotions:real_time' %}" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group">
+                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-red-200 transition-colors">
+                        <i class="fas fa-video text-red-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">Tiempo Real</p>
+                        <p class="text-sm text-gray-500">Stream de video</p>
+                    </div>
+                </a>
+                <a href="{% url 'emotions:analysis_list' %}" class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3 group-hover:bg-green-200 transition-colors">
+                        <i class="fas fa-history text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">Ver Historial</p>
+                        <p class="text-sm text-gray-500">Análisis anteriores</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('{{ form.image.id_for_label }}');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const removeImageBtn = document.getElementById('removeImage');
+    const form = document.getElementById('uploadForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const loadingText = document.getElementById('loadingText');
+
+    // Manejar drag and drop
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('border-blue-500', 'bg-blue-50');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            showImagePreview(files[0]);
+        }
+    });
+
+    // Manejar cambio de archivo
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            showImagePreview(e.target.files[0]);
+        }
+    });
+
+    // Mostrar vista previa de imagen
+    function showImagePreview(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+                dropZone.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Quitar imagen
+    removeImageBtn.addEventListener('click', function() {
+        fileInput.value = '';
+        imagePreview.classList.add('hidden');
+        dropZone.classList.remove('hidden');
+        previewImg.src = '';
+    });
+
+    // Manejar envío del formulario
+    form.addEventListener('submit', function(e) {
+        if (!fileInput.value) {
+            e.preventDefault();
+            alert('Por favor selecciona una imagen para analizar.');
+            return;
+        }
+
+        // Mostrar estado de carga
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        loadingText.classList.remove('hidden');
+    });
+
+    // Restaurar estado del botón si hay error
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            submitBtn.disabled = false;
+            submitText.classList.remove('hidden');
+            loadingText.classList.add('hidden');
+        }
+    });
+});
+</script>
+{% endblock %}

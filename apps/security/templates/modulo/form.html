@@ -1,0 +1,90 @@
+{% extends 'generic/form_mixin.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block form %}
+<div class="px-2 sm:px-6 py-8 bg-gradient-to-br from-neutral-50 to-neutral-100 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header del formulario -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-yellow-500 rounded-2xl mb-4 shadow-lg">
+                <i class="fas fa-cubes text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-neutral-800 mb-2">Gestión de Módulos</h1>
+            <p class="text-neutral-600">Crea y configura los módulos y sus permisos</p>
+        </div>
+
+        <!-- Formulario principal -->
+        <div class="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-50 to-yellow-50 px-6 py-5 border-b border-neutral-200">
+                <h2 class="text-xl font-bold text-neutral-800">Información del Módulo</h2>
+                <p class="text-sm text-neutral-600 mt-1">Complete los datos para crear o editar el módulo y asignar permisos</p>
+            </div>
+            <div class="p-4 sm:p-8 space-y-8">
+                <!-- Campos principales -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.name.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">Nombre del módulo <span class="text-danger-400">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="text-sm text-danger-600 mt-2">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.url.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">URL <span class="text-danger-400">*</span></label>
+                        {{ form.url }}
+                        {% if form.url.errors %}
+                        <p class="text-sm text-danger-600 mt-2">{{ form.url.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.menu.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">Menú <span class="text-danger-400">*</span></label>
+                        {{ form.menu }}
+                        {% if form.menu.errors %}
+                        <p class="text-sm text-danger-600 mt-2">{{ form.menu.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.icon.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">Icono <span class="text-danger-400">*</span></label>
+                        {{ form.icon }}
+                        {% if form.icon.errors %}
+                        <p class="text-sm text-danger-600 mt-2">{{ form.icon.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.order.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">Orden <span class="text-danger-400">*</span></label>
+                        {{ form.order }}
+                        {% if form.order.errors %}
+                        <p class="text-sm text-danger-600 mt-2">{{ form.order.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center mt-6">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="ml-2 text-sm font-semibold text-neutral-700">¿Está activo?</label>
+                    </div>
+                </div>
+                <div>
+                    <label for="{{ form.description.id_for_label }}" class="text-sm font-semibold text-neutral-700 mb-2 block">Descripción</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <p class="text-sm text-danger-600 mt-2">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <!-- Permisos filtrables -->
+                <div>
+                    <label class="text-sm font-semibold text-neutral-700 mb-2 block">Permisos</label>
+                    {% include "modulo/permissions_checkbox.html" %}
+                    {% if form.permissions.errors %}
+                    <p class="text-sm text-danger-600 mt-2">{{ form.permissions.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/permissions_checkbox.js' %}"></script>
+{% endblock %}

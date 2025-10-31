@@ -1,0 +1,78 @@
+{% extends 'generic/list_mixin.html' %}
+{% load static %}
+
+{% block card_statistics %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% include 'includes/card_statistics.html' with icon="fas fa-cubes" icon_bg="bg-indigo-100" icon_color="text-indigo-500" titulo_estadistica="Módulos Totales" description=total_modules %}
+    </div>
+{% endblock %}
+
+{% block action_buttons %}
+    {% if permissions.add_module %}
+        {% include "components/button.html" with url=create btn_type="crear" id="btn-crear-modulo" title="Crear nuevo módulo" %}
+    {% endif %}
+{% endblock %}
+
+{% block table_header %}
+    <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Orden</th>
+    <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+    <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Menú</th>
+    <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Permisos</th>
+    <th class="px-4 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for module in modules %}
+    <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{{ module.order }}</td>
+        <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{{ module.name }}</td>
+        <td class="px-4 py-3 whitespace-nowrap hidden sm:table-cell">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                {{ module.menu.name }}
+            </span>
+        </td>
+        <td class="px-4 py-3 text-sm text-gray-900 whitespace-nowrap hidden md:table-cell">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                {{ module.permissions.count }} permiso{{ module.permissions.count|pluralize }}
+            </span>
+        </td>
+        <td class="px-6 py-4 text-right text-sm font-medium">
+            <div class="flex flex-col sm:flex-row gap-2 justify-end">
+                {% if permissions.view_module %}
+                <a href="{% url 'security:module_detail' module.id %}" class="no-underline" style="all:unset;">
+                    {% include "components/button.html" with url=detail btn_type="detalles" id="btn-detalles" title="Ver detalles" %}
+                </a>
+                {% endif %}
+
+                {% if permissions.change_module %}
+                <a href="{% url 'security:module_update' module.id %}" class="no-underline" style="all:unset;">
+                    {% include "components/button.html" with btn_type="editar" id="btn-editar" title="Editar" %}
+                </a>
+                {% endif %}
+                
+                {% if permissions.delete_module %}
+                <a href="{% url 'security:module_delete' module.id %}" class="btn btn-delete" title="Eliminar"
+                    data-title="¿Estás seguro de que deseas eliminar este módulo?"
+                    data-details='[
+                        {"icon": "fa fa-cubes", "label": "Permisos", "value": "{{ module.permissions.count }}"}
+                    ]'>
+                    <i class="fas fa-trash"></i>
+                </a>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+            <div class="flex flex-col items-center justify-center space-y-3">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-cubes text-3xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900">No hay módulos registrados</h3>
+                <p class="text-gray-500 max-w-sm">Parece que aún no has creado ningún módulo. Puedes crear uno haciendo clic en el botón 'Crear Módulo'.</p>
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+{% endblock %}

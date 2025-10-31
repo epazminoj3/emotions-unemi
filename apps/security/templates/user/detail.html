@@ -1,0 +1,242 @@
+{% extends 'generic/detail_mixin.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block detail_content %}
+<div class="min-h-screen bg-white">
+    <!-- Header Section -->
+    <div class="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-primary-900/20"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-primary-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-accent-500/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div class="relative p-8">
+            <div class="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+                <!-- Avatar with enhanced styling -->
+                <div class="relative group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-accent-400 to-secondary-400 rounded-full blur-sm opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                    <img src="{{ current_user.get_image }}" alt="{{ current_user.get_full_name }}" 
+                         class="relative w-32 h-32 lg:w-40 lg:h-40 rounded-full object-cover border-4 border-white shadow-2xl">
+                    <div class="absolute -bottom-2 -right-2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fas fa-user text-primary-600 text-lg"></i>
+                    </div>
+                </div>
+                
+                <!-- User Info -->
+                <div class="flex-grow text-center lg:text-left text-white">
+                    <h1 class="text-3xl lg:text-4xl font-bold mb-2 tracking-tight">{{ current_user.get_full_name }}</h1>
+                    <p class="text-xl text-primary-100 mb-6 font-medium">@{{ current_user.username }}</p>
+                    
+                    <!-- Status Badges -->
+                    <div class="flex flex-wrap justify-center lg:justify-start gap-3 mb-6">
+                        {% if current_user.is_active %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-success-100 text-success-800 border border-success-200">
+                            <i class="fas fa-check-circle mr-2"></i>Activo
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-danger-100 text-danger-800 border border-danger-200">
+                            <i class="fas fa-times-circle mr-2"></i>Inactivo
+                        </span>
+                        {% endif %}
+                        
+                        {% if current_user.is_staff %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-warning-100 text-warning-800 border border-warning-200">
+                            <i class="fas fa-user-shield mr-2"></i>Staff
+                        </span>
+                        {% endif %}
+                        
+                        {% if current_user.is_superuser %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-secondary-100 text-secondary-800 border border-secondary-200">
+                            <i class="fas fa-crown mr-2"></i>Superusuario
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Content Sections -->
+    <div class="max-w-7xl mx-auto px-6 py-12 space-y-12">
+        
+        <!-- Contact Information -->
+        <div class="bg-white rounded-2xl shadow-xl border border-neutral-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-primary-50 to-accent-50 px-8 py-6 border-b border-neutral-100">
+                <h3 class="text-2xl font-bold text-neutral-800 flex items-center">
+                    <div class="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                        <i class="fas fa-address-card text-white text-lg"></i>
+                    </div>
+                    Información de contacto
+                </h3>
+            </div>
+            
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    <!-- Email -->
+                    <div class="group bg-gradient-to-br from-neutral-50 to-neutral-100 p-6 rounded-xl border border-neutral-200 hover:shadow-lg hover:border-primary-200 transition-all duration-300">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center group-hover:bg-primary-200 transition-colors duration-300">
+                                <i class="fas fa-envelope text-primary-600 text-lg"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-neutral-500 mb-1">Email</p>
+                                <a href="mailto:{{ user.email }}" class="text-primary-600 hover:text-primary-700 font-semibold break-all transition-colors duration-200">
+                                    {{ current_user.email }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Phone -->
+                    <div class="group bg-gradient-to-br from-neutral-50 to-neutral-100 p-6 rounded-xl border border-neutral-200 hover:shadow-lg hover:border-accent-200 transition-all duration-300">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center group-hover:bg-accent-200 transition-colors duration-300">
+                                <i class="fas fa-phone text-accent-600 text-lg"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-neutral-500 mb-1">Teléfono</p>
+                                {% if current_user.phone %}
+                                <a href="tel:{{ current_user.phone }}" class="text-accent-600 hover:text-accent-700 font-semibold transition-colors duration-200">
+                                    {{ current_user.phone }}
+                                </a>
+                                {% else %}
+                                <span class="text-neutral-400 italic">No especificado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- DNI -->
+                    <div class="group bg-gradient-to-br from-neutral-50 to-neutral-100 p-6 rounded-xl border border-neutral-200 hover:shadow-lg hover:border-secondary-200 transition-all duration-300">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center group-hover:bg-secondary-200 transition-colors duration-300">
+                                <i class="fas fa-id-card text-secondary-600 text-lg"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-neutral-500 mb-1">DNI</p>
+                                {% if current_user.dni %}
+                                <span class="text-neutral-800 font-semibold">{{ current_user.dni }}</span>
+                                {% else %}
+                                <span class="text-neutral-400 italic">No especificado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Birth Date -->
+                    <div class="group bg-gradient-to-br from-neutral-50 to-neutral-100 p-6 rounded-xl border border-neutral-200 hover:shadow-lg hover:border-success-200 transition-all duration-300">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center group-hover:bg-success-200 transition-colors duration-300">
+                                <i class="fas fa-birthday-cake text-success-600 text-lg"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-neutral-500 mb-1">Fecha de nacimiento</p>
+                                {% if current_user.date_of_birth %}
+                                <span class="text-neutral-800 font-semibold">{{ current_user.date_of_birth|date:"d/m/Y" }}</span>
+                                {% else %}
+                                <span class="text-neutral-400 italic">No especificada</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Address Section -->
+        {% if current_user.address %}
+        <div class="bg-white rounded-2xl shadow-xl border border-neutral-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-accent-50 to-success-50 px-8 py-6 border-b border-neutral-100">
+                <h3 class="text-2xl font-bold text-neutral-800 flex items-center">
+                    <div class="w-12 h-12 bg-accent-600 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                        <i class="fas fa-map-marker-alt text-white text-lg"></i>
+                    </div>
+                    Dirección
+                </h3>
+            </div>
+            
+            <div class="p-8">
+                <div class="bg-gradient-to-br from-neutral-50 to-accent-50 p-6 rounded-xl border border-neutral-200">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-home text-accent-600 text-lg"></i>
+                        </div>
+                        <p class="text-neutral-700 text-lg leading-relaxed">{{ current_user.address }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Groups and Permissions -->
+        <div class="bg-white rounded-2xl shadow-xl border border-neutral-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-warning-50 to-secondary-50 px-8 py-6 border-b border-neutral-100">
+                <h3 class="text-2xl font-bold text-neutral-800 flex items-center">
+                    <div class="w-12 h-12 bg-warning-600 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                        <i class="fas fa-users-cog text-white text-lg"></i>
+                    </div>
+                    Grupos y permisos
+                </h3>
+            </div>
+            
+            <div class="p-8 space-y-8">
+                <!-- Groups -->
+                <div>
+                    <h4 class="text-lg font-semibold text-neutral-700 mb-4 flex items-center">
+                        <i class="fas fa-users text-warning-600 mr-2"></i>
+                        Grupos asignados
+                    </h4>
+                    <div class="flex flex-wrap gap-3">
+                        {% for group in current_user.groups.all %}
+                        <span class="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-warning-100 to-warning-200 text-warning-800 border border-warning-300 shadow-sm hover:shadow-md transition-shadow duration-200">
+                            <i class="fas fa-users mr-2"></i>{{ group.name }}
+                        </span>
+                        {% empty %}
+                        <div class="flex items-center text-neutral-500 bg-neutral-100 px-4 py-3 rounded-xl border border-neutral-200">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <span class="italic">No pertenece a ningún grupo</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Timeline Information -->
+                <div class="bg-gradient-to-br from-neutral-50 to-primary-50 p-6 rounded-xl border border-neutral-200">
+                    <h4 class="text-lg font-semibold text-neutral-700 mb-4 flex items-center">
+                        <i class="fas fa-clock text-primary-600 mr-2"></i>
+                        Información temporal
+                    </h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+                                <i class="far fa-calendar-plus text-primary-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-neutral-500">Fecha de registro</p>
+                                <p class="font-semibold text-neutral-800">{{ current_user.date_joined|date:"d/m/Y H:i" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-accent-100 rounded-lg flex items-center justify-center">
+                                <i class="far fa-calendar-check text-accent-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-neutral-500">Último acceso</p>
+                                {% if current_user.last_login %}
+                                <p class="font-semibold text-neutral-800">{{ current_user.last_login|date:"d/m/Y H:i" }}</p>
+                                {% else %}
+                                <p class="font-semibold text-neutral-400 italic">Nunca ha accedido</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
