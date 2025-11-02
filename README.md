@@ -14,28 +14,71 @@ El proyecto se divide en dos partes principales:
 
 ## Instalar
 Si quieres probar el proyecto, necesitas:
-1. Clonar este repositorio
-2. Instalar dependencias:
+1. Clonar este repositorio en ``cmd``
 ```
-instalación de pip -r require.txt
+git clone https://github.com/epazminoj3/emotions-unemi.git
 ```
-3. Configuración de la base de datos:
+2. Crea un entorno virtual
+``` 
+cd emotions-unemi
 ```
-Mover Python Managed.py
 ```
-4. Inicie el servidor:
+python -m venv venv
 ```
-El servidor inicia Python Managed.py
+```
+cd venv/scripts
+```
+```
+activate
+```
+Recuerda volver a la carpeta principal ``emotions-unemi``, ejecuta 2 veces:
+```
+cd ..
+```
+3. Instalar dependencias:
+```
+pip install -r requirements.txt
+```
+3. Configura la base de datos en el archivo ``.env``:
+- DB_NAME=emotions    #Cambiala por tu base de datos
+- DB_USER=postgres
+- DB_PASSWORD=1234    #Cambiala segun tu base de datos
+- DB_HOST=localhost
+- DB_PORT=5432
+- no olvide guardar los cambios.
+5. Ejecuta las migraciones:
+```
+python manage.py makemigrations
+```
+```
+python manage.py migrate
+```
+6. Ya casi terminamos, para iniciar rapido ejecute un scripts inicial:
+```
+python script_inicial.py
+```
+. El scripts le dira el ``superusuario`` y configurara el sistema:
+- Email:
+```
+admin@gmail.com
+```
+- Contraseña
+```
+admin
+```
+5. Inicie el servidor:
+```
+python manage.py runserver
 ```
 
 ## Estructura
 ```
 emociones-unemi/
-├── aplicaciones/
-│ ├── emociones/ # Todos los códigos de detección
-│ └── seguridad/ # Administrar usuarios y permisos
-├── configuración/ # Ajustes generales
-└── gestión.py
+├── apps/
+│ ├── emotions/ # Todos los códigos de detección
+│ └── security/ # Administrar usuarios y permisos
+├── config/ # Ajustes generales
+└── manage.py
 ```
 
 ## Característica interesante
