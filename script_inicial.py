@@ -52,14 +52,14 @@ def create_initial_data():
         
         # 3. CREAR SUPERUSUARIO
         print("\n👤 3. Creando superusuario...")
-        email = 'admin@emotions.com'
+        email = 'admin@gmail.com'
         username = 'admin'
         
         if not User.objects.filter(email=email).exists():
             superuser = User.objects.create_superuser(
                 username=username,
                 email=email,
-                password='admin123',  # CAMBIAR EN PRODUCCIÓN
+                password='admin',  
                 first_name='Super',
                 last_name='Administrador',
                 dni='0000000000',
@@ -69,7 +69,7 @@ def create_initial_data():
             superuser.groups.add(grupo_admin)
             print(f"   ✅ Superusuario creado:")
             print(f"      - Email: {email}")
-            print(f"      - Password: admin123")
+            print(f"      - Password: admin")
             print(f"      - Grupo: Administrador")
         else:
             superuser = User.objects.get(email=email)
@@ -237,10 +237,9 @@ def create_initial_data():
     print("✨ ¡CONFIGURACIÓN COMPLETADA EXITOSAMENTE!")
     print("=" * 70)
     print("\n📝 CREDENCIALES DE ACCESO:")
-    print(f"   Email:    admin@emotions.com")
-    print(f"   Password: admin123")
+    print(f"   Email:    admin@gmail.com")
+    print(f"   Password: admin")
     print(f"   Grupo:    Administrador")
-    print("\n⚠️  IMPORTANTE: Cambia la contraseña en producción")
     print("=" * 70)
 
 if __name__ == '__main__':
